@@ -3,8 +3,8 @@
 
 ## Instructor Information
 
-Instructor: Tyler Sutton
-Email: tsutton@uakron.edu	
+Instructor: Tyler Sutton  
+Email: tsutton@uakron.edu  
 Office Location & Hours: TBD
 
 ##General Information
