@@ -32,7 +32,6 @@ inline DWORD __stdcall thread_start_routine(void *context)
 {
 	auto param = static_cast<create_thread_param *>(context);
 	param->function(param->context);
-	delete param;
 	return 0;
 }
 
@@ -42,7 +41,6 @@ inline void *thread_start_routine(void *context)
 {
 	auto param = static_cast<create_thread_param *>(context);
 	param->function(param->context);
-	delete param;
 	return nullptr;
 }
 
@@ -53,13 +51,13 @@ inline void *thread_start_routine(void *context)
 
 inline thread create_thread(void(*function)(void *), void *context)
 {
-	auto param = new create_thread_param;
-	param->function = function;
-	param->context = context;
+	create_thread_param param;
+	param.function = function;
+	param.context = context;
 
 #ifdef _WIN32
 
-	auto handle = CreateThread(nullptr, 0, thread_start_routine, param, 0, nullptr);
+	auto handle = CreateThread(nullptr, 0, thread_start_routine, &param, 0, nullptr);
 	if (!handle)
 	{
 		auto error = GetLastError();
@@ -119,7 +117,7 @@ template <typename Fn>
 struct thread_param : public basic_thread_param
 {
 	thread_param(Fn fn)
-		:fn(std::move(fn))
+		: fn(std::move(fn))
 	{
 	}
 
