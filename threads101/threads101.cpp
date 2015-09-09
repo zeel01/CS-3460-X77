@@ -6,7 +6,7 @@
 #include <iostream>
 #include <vector>
 
-#include "..\inlcude\thread.h"
+#include "thread.h"
 
 
 void function(void *context)
