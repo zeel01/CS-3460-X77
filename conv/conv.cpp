@@ -3,8 +3,8 @@
 
 #include "stdafx.h"
 
-#include "thread.h"
-#include "image.h"
+#include "../include/thread.h"
+#include "../include/image.h"
 
 
 
@@ -46,7 +46,7 @@ void conv(matrix &x, const matrix &k)
 			{
 				auto ycol = col - k.cols / 2 + 1;
 				for (int kcol = k.cols - 1; kcol >= 0; kcol--, ycol++)
-				{			
+				{
 					t += y(yrow, ycol) * k(krow, kcol);
 				}
 			}
@@ -80,7 +80,7 @@ matrix binomial(int n)
 {
 	if ((n & 1) == 0)
 	{
-		throw std::exception("n must be odd");
+		throw std::invalid_argument("n must be odd");
 	}
 
 	matrix x, y;
@@ -114,4 +114,3 @@ int main()
 
     return 0;
 }
-

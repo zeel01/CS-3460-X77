@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <stdexcept>
+
 // A simple matrix
 struct matrix
 {
@@ -52,7 +54,7 @@ public:
 		rows = r;
 		cols = c;
 		data = new int[rows * cols];
-		
+
 		auto size = rows * cols;
 		for (unsigned i = 0; i < size; i++)
 		{
@@ -127,7 +129,7 @@ matrix operator +(const matrix &x, const matrix &y)
 {
 	if (x.rows != y.rows || x.cols != y.cols)
 	{
-		throw std::exception("Invalid arguments");
+		throw std::invalid_argument("Invalid arguments");
 	}
 
 	matrix z;
@@ -148,7 +150,7 @@ matrix operator -(const matrix &x, const matrix &y)
 {
 	if (x.rows != y.rows || x.cols != y.cols)
 	{
-		throw std::exception("Invalid arguments");
+		throw std::invalid_argument("Invalid arguments");
 	}
 
 	matrix z;
@@ -169,7 +171,7 @@ matrix operator *(const matrix &x, const matrix &y)
 {
 	if (x.cols != y.rows)
 	{
-		throw std::exception("Invalid arguments");
+		throw std::invalid_argument("Invalid arguments");
 	}
 
 	matrix z;
