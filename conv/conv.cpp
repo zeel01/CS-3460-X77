@@ -101,14 +101,21 @@ matrix binomial(int n)
 }
 
 
+
+#include <timer.h>
+
 int main()
 {
 	auto bmp = load_image("C:\\Dev\\2015\\90.jpg");
 	auto orig = bmp;
 
-	matrix kernel = binomial(3);
+	matrix kernel = binomial(9);
 
+	auto start = now();
 	conv(bmp, kernel);
+	auto stop = now();
+	
+	printf("%g\n", to_seconds(start, stop));
 
 	save_png(bmp, "C:\\Dev\\2015\\test.png");
 

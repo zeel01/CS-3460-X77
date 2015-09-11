@@ -5,6 +5,9 @@
 
 #include <iostream>
 
+#include "thread.h"
+#include "mutex.h"
+
 
 bool is_prime(int n)
 {
@@ -19,7 +22,7 @@ bool is_prime(int n)
 
 int main()
 {
-	for (int i = 2; i < 25; i++)
+	for (int i = 2; i < 100000000; i++)
 	{
 		if (is_prime(i))
 		{
