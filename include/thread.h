@@ -28,6 +28,8 @@ namespace details
 	// Base class for thread routine parameters.
 	struct basic_thread_param
 	{
+		virtual ~basic_thread_param() { };
+
 		// Derived classes must implement this method.
 		virtual void operator()() const = 0;
 
@@ -97,7 +99,7 @@ namespace details
 	inline void *thread_start_routine(void *context)
 	{
 		auto param = static_cast<basic_thread_param *>(context);
-		param->execute()
+		param->execute();
 		return nullptr;
 	}
 
@@ -158,7 +160,7 @@ inline void join(thread thread)
 
 	CloseHandle(thread);
 
-#else 
+#else
 
 	auto error = pthread_join(thread, nullptr);
 	if (error)
@@ -168,9 +170,3 @@ inline void join(thread thread)
 
 #endif
 }
-
-
-
-
-
-

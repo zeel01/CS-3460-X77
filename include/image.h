@@ -1,6 +1,12 @@
 
 #pragma once
 
+#ifndef _WIN32
+
+#include "boost_image.h"
+
+#else
+
 #include <filesystem>
 
 #include "matrix.h"
@@ -137,12 +143,12 @@ inline void save_png(const matrix &x, const std::tr2::sys::path &path)
 		{
 			return hr;
 		}
-		
+
 		frame->SetSize(x.cols, x.rows);
-		
+
 		GUID format = GUID_WICPixelFormat8bppGray;
 		frame->SetPixelFormat(&format);
-		
+
 		BYTE *buf = new BYTE[x.rows * x.cols];
 		auto xptr = x.data;
 		auto xend = xptr + x.rows * x.cols;
@@ -161,7 +167,7 @@ inline void save_png(const matrix &x, const std::tr2::sys::path &path)
 		{
 			return hr;
 		}
-		
+
 		hr = frame->Commit();
 		if (FAILED(hr))
 		{
@@ -182,3 +188,5 @@ inline void save_png(const matrix &x, const std::tr2::sys::path &path)
 	CoUninitialize();
 
 }
+
+#endif
