@@ -121,7 +121,7 @@ namespace details
 #else
 
 		pthread_t tid;
-		auto error = pthread_create(&tid, nullptr, thread_start_routine, &param);
+		auto error = pthread_create(&tid, nullptr, thread_start_routine, param);
 		if (error)
 		{
 			throw std::system_error(error, std::generic_category());

@@ -2,6 +2,8 @@
 #pragma once
 
 #include <chrono>
+#include <tuple>
+
 
 inline auto now()
 {
@@ -18,7 +20,8 @@ inline auto to_seconds(
 
 
 
-std::pair<double, double> get_process_times()
+
+std::tuple<int64_t, int64_t, int64_t> time_point()
 {
 	union time
 	{
@@ -28,14 +31,25 @@ std::pair<double, double> get_process_times()
 	time c, e, k, u;
 	GetProcessTimes(GetCurrentProcess(), &c.ft, &e.ft, &k.ft, &u.ft);
 
-	SYSTEMTIME sk, su;
-	FileTimeToSystemTime(&k.ft, &sk);
-	FileTimeToSystemTime(&u.ft, &su);
+	LARGE_INTEGER t;
+	QueryPerformanceCounter(&t);
 
-	double kernel = static_cast<double>(k.li.QuadPart) / 10000000.0;
-	double user = static_cast<double>(u.li.QuadPart) / 10000000.0;
-
-	return std::make_pair(kernel, user); 
+	return std::make_tuple(t.QuadPart, k.li.QuadPart, u.li.QuadPart);
 }
 
+
+auto diff(const std::tuple<int64_t, int64_t, int64_t> &tp1, const std::tuple<int64_t, int64_t, int64_t> &tp2)
+{
+	auto dt = std::get<0>(tp2) - std::get<0>(tp1);
+	auto dk = std::get<1>(tp2) - std::get<1>(tp1);
+	auto du = std::get<2>(tp2) - std::get<2>(tp1);
+
+	LARGE_INTEGER f;
+	QueryPerformanceFrequency(&f);
+
+	return std::make_tuple(
+		static_cast<double>(dt) / static_cast<double>(f.QuadPart),
+		static_cast<double>(dk) / 10000000.0,
+		static_cast<double>(du) / 10000000.0);
+}
 
