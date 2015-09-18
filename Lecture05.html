@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="utf-8">
 
-		<title>Data Parallelism</title>
+		<title>Threads 201</title>
 
 		<meta name="author" content="Tyler Sutton">
 
@@ -40,160 +40,200 @@
 			<div class="slides">
 
 				<section>
-				<h1>Cores</h1>
-				<pre><code>
-std::thread::hardware_concurrency();				
-				</pre></code>
+				<h2>create_thread</h2>
+				<h1>95000 nanoseconds<h1>
 				</section>
 			
 				<section>
-					<h1>Data Parallelism</h1>
+					<h2>Access Times</h2>
+					<ul>
+						<li>L1 cache: 1ns</li>
+						<li>L2 cache: 5ns</li>
+						<li>RAM: 85ns</li>
+						<li>Sort 1000 ints: 75000ns</li>
+					</ul>
 				</section>
 
 				<section>
-					<h2>&lt;algorithms&gt;</h2>
-				</section>
-
-				<section>
-adjacent_difference,
-adjacent_find,
-all_of,
-any_of,
-copy,
-count,
-equal,
-exclusive_scan,
-fill,
-find,
-find_end,
-find_first_of,
-for_each,
-generate,
-includes,
-inclusive_scan,
-inner_product,
-inplace_merge,
-is_heap,
-is_heap_until,
-is_partitioned,
-is_sorted,
-is_sorted_until,
-lexicographical_compare,
-max_element,
-merge,
-min_element,
-minmax_element,
-mismatch,
-move,
-none_of,
-nth_element,
-partial_sort,
-partition,
-reduce,
-remove,
-replace,
-replace_if,
-reverse,
-reverse_copy,
-rotate,
-rotate_copy,
-search,
-set_difference,
-set_intersection,
-set_symmetric_difference,
-set_union,
-sort,
-stable_partition,
-stable_sort,
-swap_ranges,
-transform,
-transform_exclusive_scan,
-transform_inclusive_scan,
-transform_reduce,
-uninitialized_copy,
-uninitialized_fill,
-unique,
-unique_copy
-				</section>
-
-				<section>
-					<h2>&lt;epxerimental/algorithms&gt;</h2>
-					<p>
-						<a href="">Parallelism TS</a>
-					</p>
+					<h2>join</h2>
+					<h1>150000 nanoseconds<h1>
 				</section>
 				
 				<section>
-adjacent_difference,
-adjacent_find,
-all_of,
-any_of,
-copy,
-count,
-equal,
-exclusive_scan,
-fill,
-find,
-find_end,
-find_first_of,
-for_each,
-generate,
-includes,
-inclusive_scan,
-inner_product,
-inplace_merge,
-is_heap,
-is_heap_until,
-is_partitioned,
-is_sorted,
-is_sorted_until,
-lexicographical_compare,
-max_element,
-merge,
-min_element,
-minmax_element,
-mismatch,
-move,
-none_of,
-nth_element,
-partial_sort,
-partition,
-reduce,
-remove,
-replace,
-replace_if,
-reverse,
-reverse_copy,
-rotate,
-rotate_copy,
-search,
-set_difference,
-set_intersection,
-set_symmetric_difference,
-set_union,
-sort,
-stable_partition,
-stable_sort,
-swap_ranges,
-transform,
-transform_exclusive_scan,
-transform_inclusive_scan,
-transform_reduce,
-uninitialized_copy,
-uninitialized_fill,
-unique,
-unique_copy
+					<h2>This Sucks</h2>
+					<pre><code>
+thread[N] threads;
+for (int i = 0; i < N; i++)
+{
+  threads[i] = create_thread(...);
+}
+
+for (int i = 0; i < N; i++)
+{
+  join(threads[i]);
+}
+					</code></pre>
+				</section>
+				
+				<section>
+					<h2>This is Worse</h2>
+					<pre><code>
+void sort(first, last)
+{
+  auto mid = first + last / 2;
+  auto t1 = create_thread([mid] { sort(first, mid); });
+  auto t2 = create_thread([mid] { sort(mid + 1, last) });
+  join(t1);
+  join(t2);
+  merge(first, last);
+}
+					</code></pre>
+					Sorting 1B integers would create 1,073,741,822 threads.
+				</section>	
+				
+				<section style="text-align: left; margin-left:4em">
+					<p>That's</p>
+					<ul>
+						<li>28.3 hours spent creating threads</li>
+						<li>and 44.7 hours spent joining threads</li>
+						<li>and 1023 TB of stack space.</li>
+					</ul>
+				</section>
+				
+				<section>
+					<h3>std::sort takes 111.4 seconds to sort 1B integers.</h3>
+					<p></p>
+					<p>We can do better.</p>
 				</section>
 
 				<section>
-					<h2>Implementations</h2>
-					<ul>
-					<li><a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/parallel_mode.html">Parallel Mode</a> For GCC</li>
-					<li><a href="https://parallelstl.codeplex.com/">Parallel STL</a> for Windows</li>
-					<li>Clang?</li>
-					</ul>
-					<h1><a href="https://parallelstl.codeplex.com/">Parallel STL</a></h1>
+					<h2>Problem</h2>
+					<pre><code>
+auto handle = CreateThread(nullptr, 0, thread_start_routine, param, 0, nullptr);
+auto result = WaitForSingleObject(thread, INFINITE);
+					</pre></code>
 				</section>
+
+				<section>
+					<h2>Solution?</h2>
+					<p></p>
+					<h1>Don't Create Threads!</h1>
+				</section>				
+				
+				<section>
+					<h2>Threadpool</h2>
+				</section>				
+				
+				<section>
+					<h2>Windows</h2>
+					<pre><code>
+CreateThreadpoolWork
+SubmitThreadoolWork
+CloseThreadpoolWork
+					</pre></code>
+				</section>
+
+				<section>
+					<h2>POSIX</h2>
+					<pre><code>
+?
+					</pre></code>
+				</section>
+
+				<section>
+					<pre><code>
+thread create_thread(basic_thread_param *param)
+{
+  auto handle = CreateThread(nullptr, 0, thread_start_routine, param, 0, nullptr);
+  if (!handle)
+  {
+    auto error = GetLastError();
+    throw std::system_error(error, std::generic_category());
+  }
+  return handle;
+}
+					</pre></code>
+				</section>	
+				
+				<section>
+					<pre><code>
+void queue_work(basic_thread_param *param)
+{
+#ifdef _WIN32
+	auto work = CreateThreadpoolWork([](PTP_CALLBACK_INSTANCE, PVOID context, PTP_WORK work)
+	{
+		auto param = (basic_thread_param *)context;
+		param->execute();
+		CloseThreadpoolWork(work);
+	}, param, nullptr);
+	SubmitThreadpoolWork(work);
+}
+					</pre></code>
+				</section>					
+				
+				<section>
+					<h2>The future is now!</h2>
+				</section>					
+
+				<section>
+					<pre><code>
+class future
+{
+public:
+  future();
+  ~future();
+public:
+  void wait();
+public:
+  details::basic_thread_param *state;
+};
+					</pre></code>
+				</section>					
+
+				<section>
+					<pre><code>
+struct basic_thread_param
+{
+  virtual ~basic_thread_param() { };
+  virtual void operator()() const = 0;
+  virtual void execute() {
+    try {
+      (*this)();
+    }
+    catch (...) {
+      ex = std::current_exception();
+    }
+  }
+  
+  std::exception_ptr ex;
+};
+					</pre></code>
+				</section>					
+
+				<section>
+					<h2>exception_ptr</h2>
+					<pre><code>
+exception_ptr current_exception();
+rethrow_exception(exception_ptr);
+exception_ptr make_exception_ptr(E);
+					</pre></code>
+				</section>					
+
+				<section>
+					<pre><code>
+try
+{
+  auto f = queue_work([] {
+    // Do work
+    throw std::exception("!");
+  });
+  f.wait();
+}
+catch (std::exception &ex) {
+  printf("%s\n", ex.what());
+}
+					</pre></code>
+				</section>			
 				
 				
 				<section style="text-align: left;">
