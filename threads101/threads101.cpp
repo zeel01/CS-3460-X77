@@ -6,7 +6,7 @@
 #include <iostream>
 #include <vector>
 
-#include "thread.h"
+#include "cs477.h"
 
 
 void function(void *context)
@@ -15,62 +15,83 @@ void function(void *context)
 	printf("hello, world\n");
 }
 
-//int main()
-//{
-//	auto thread = create_thread(function, nullptr);	
-//
-//	join(thread);
-//    return 0;
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#include <ppl.h>
+#include <ppltasks.h>
 
 int main()
 {
-	std::vector<thread> threads;
+	
+	std::atomic<int> sum = 0;
 
-	try
+	for (int T = 2; T < (1 << 16); T *= 2)
 	{
-		for (int i = 0; i < 100000; i++)
+		std::vector<cs477::future> futures;
+		futures.reserve(T);
+
+		std::vector<cs477::thread> threads;
+		threads.reserve(T);
+
+		try
 		{
-			threads.push_back(create_thread([i]
+			sum = 0;
 			{
-				//Sleep(100);
-				std::cout << i << std::endl;
-				//printf("%d\n", i);
-			}));
-		}
+				auto t1 = now();
 
-		for (auto &&thread : threads)
-		{
-			join(thread);
+				for (int i = 0; i < T; i++)
+				{
+					auto f = cs477::queue_work([&sum, i]
+					{
+						sum += i;
+					});
+
+					futures.push_back(std::move(f));
+				}
+
+				for (auto &f : futures)
+				{
+					f.wait();
+				}
+
+				auto t2 = now();
+				printf("%d: %d, %g, ", T, sum.load(), to_seconds(t1, t2));
+			}
+
+			sum = 0;
+			{
+				auto t1 = now();
+
+				for (int i = 0; i < T; i++)
+				{
+					auto t = cs477::create_thread([&sum, i]
+					{
+						sum += i;
+					});
+
+					threads.push_back(t);
+				}
+
+				for (auto &t : threads)
+				{
+					cs477::join(t);
+				}
+
+				auto t2 = now();
+				printf("%g\n", to_seconds(t1, t2));
+
+			}
 		}
-	}
-	catch (std::system_error &ex)
-	{
-		printf("Error: %d\n", ex.code().value());
-	}
-	catch (std::exception &ex)
-	{
-		printf("Error: %s\n", ex.what());
-	}
-	catch (...)
-	{
-		printf("Error!\n");
+		catch (std::system_error &ex)
+		{
+			printf("Error: %d\n", ex.code().value());
+		}
+		catch (std::exception &ex)
+		{
+			printf("Error: %s\n", ex.what());
+		}
+		catch (...)
+		{
+			printf("Error!\n");
+		}
 	}
 
 }

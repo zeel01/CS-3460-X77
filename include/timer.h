@@ -19,7 +19,7 @@ inline auto to_seconds(
 }
 
 
-
+#ifdef _WIN32
 
 std::tuple<int64_t, int64_t, int64_t> time_point()
 {
@@ -52,4 +52,7 @@ auto diff(const std::tuple<int64_t, int64_t, int64_t> &tp1, const std::tuple<int
 		static_cast<double>(dk) / 10000000.0,
 		static_cast<double>(du) / 10000000.0);
 }
+
+#endif
+
 

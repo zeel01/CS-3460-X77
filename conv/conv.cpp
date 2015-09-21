@@ -3,9 +3,8 @@
 
 #include "stdafx.h"
 
-#include "../include/thread.h"
-#include "../include/image.h"
-
+#include "cs477.h"
+#include "image.h"
 
 
 
@@ -102,7 +101,6 @@ matrix binomial(int n)
 
 
 
-#include <timer.h>
 
 int main()
 {

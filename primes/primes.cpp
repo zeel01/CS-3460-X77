@@ -5,8 +5,8 @@
 
 #include <iostream>
 
-#include "thread.h"
-#include "mutex.h"
+#include "cs477.h"
+
 
 
 bool is_prime(int n)

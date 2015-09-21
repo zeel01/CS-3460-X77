@@ -1,68 +1,105 @@
 
 #pragma once
 
+#include "cs477.h"
 
-class mutex
+namespace cs477
 {
-public:
-	mutex();
 
-	mutex(const mutex &) = delete;
-	mutex &operator =(const mutex &) = delete;
+	class mutex
+	{
+	public:
+		mutex();
 
-	mutex(mutex &&) = delete;
-	mutex &operator =(mutex &&) = delete;
+		mutex(const mutex &) = delete;
+		mutex &operator =(const mutex &) = delete;
 
-	~mutex();
+		mutex(mutex &&) = delete;
+		mutex &operator =(mutex &&) = delete;
 
-public:
-	void lock();
-	void unlock();
+		~mutex();
 
-private:
+	public:
+		void lock();
+		void unlock();
+
+	private:
 #ifdef _WIN32
-	CRITICAL_SECTION cs;
+		CRITICAL_SECTION cs;
 #else
-	pthread_mutex_t mtx;
+		pthread_mutex_t mtx;
+#endif
+		friend class condition_variable;
+	};
+
+
+
+
+	template <typename Lock = mutex>
+	class lock_guard
+	{
+	public:
+		lock_guard(Lock &lock);
+		~lock_guard();
+
+		lock_guard(const lock_guard &) = delete;
+		lock_guard &operator=(const lock_guard &) = delete;
+
+	private:
+		Lock &my_lock;
+	};
+
+
+
+
+	template <typename Fn>
+	void lock(mutex &mtx, Fn fn)
+	{
+		mtx.lock();
+		try
+		{
+			mtx.unlock();
+		}
+		catch (...)
+		{
+			mtx.unlock();
+			throw;
+		}
+	}
+
+
+
+	class condition_variable
+	{
+	public:
+		condition_variable();
+
+		condition_variable(const condition_variable &) = delete;
+		condition_variable &operator =(const condition_variable &) = delete;
+
+		condition_variable(condition_variable &&) = delete;
+		condition_variable &operator =(condition_variable &&) = delete;
+
+		~condition_variable();
+
+	public:
+		void notify_one();
+		void notify_all();
+
+		void wait(mutex &mtx);
+
+	private:
+#ifdef _WIN32
+		CONDITION_VARIABLE cv;
+#else
+		pthread_mutex_t cv;
 #endif
 
-};
+	};
 
 
 
 
-inline mutex::mutex()
-{
-#ifdef _WIN32
-	InitializeCriticalSection(&cs);
-#else
-	pthread_mutex_init(&mtx, nullptr);
-#endif
-}
 
-inline mutex::~mutex()
-{
-#ifdef _WIN32
-	DeleteCriticalSection(&cs);
-#else
-	pthread_mutex_destroy(&mtx);
-#endif
-}
 
-inline void mutex::lock()
-{
-#ifdef _WIN32
-	EnterCriticalSection(&cs);
-#else
-	pthread_mutex_lock(&mtx);
-#endif
-}
-
-inline void mutex::unlock()
-{
-#ifdef _WIN32
-	LeaveCriticalSection(&cs);
-#else
-	pthread_mutex_unlock(&mtx);
-#endif
 }
