@@ -23,7 +23,7 @@ Homework Assignments
 	c. Style: 3pts  
 
 3.	Parallel Sort
-	Implement a Parallel sort algorithm (quick or merge).
+	Implement a Parallel sort algorithm (quick or merge).  
 	a. Completeness: ?pt  
 	b. Performance: ?pts  
 	c. Style: ?pts  

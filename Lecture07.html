@@ -40,52 +40,161 @@
 			<div class="slides">
 
 				<section>
-				<h1>Waiting...</h1>
+				<h1>Cores</h1>
+				<pre><code>
+std::thread::hardware_concurrency();				
+				</pre></code>
 				</section>
 			
 				<section>
-					<h1>Condition Variable</h1>
+					<h1>Data Parallelism</h1>
 				</section>
 
 				<section>
-					<h2>Windows</h2>
-					CONDITION_VARIABLE
-					<pre><code>
-InitializeConditionVariable
-SleepConditionVariableCS
-WakeConditionVariable
-WakeAllConditionVariable					
-					</code></pre>
+					<h2>&lt;algorithms&gt;</h2>
 				</section>
 
 				<section>
-					<h2>POSIX</h2>
-					pthread_cond_t
-					<pre><code>
-pthread_cond_init
-pthread_cond_wait
-pthread_cond_signal
-pthread_cond_broadcast
-pthread_cond_destroy					
-					</code></pre>
+adjacent_difference,
+adjacent_find,
+all_of,
+any_of,
+copy,
+count,
+equal,
+exclusive_scan,
+fill,
+find,
+find_end,
+find_first_of,
+for_each,
+generate,
+includes,
+inclusive_scan,
+inner_product,
+inplace_merge,
+is_heap,
+is_heap_until,
+is_partitioned,
+is_sorted,
+is_sorted_until,
+lexicographical_compare,
+max_element,
+merge,
+min_element,
+minmax_element,
+mismatch,
+move,
+none_of,
+nth_element,
+partial_sort,
+partition,
+reduce,
+remove,
+replace,
+replace_if,
+reverse,
+reverse_copy,
+rotate,
+rotate_copy,
+search,
+set_difference,
+set_intersection,
+set_symmetric_difference,
+set_union,
+sort,
+stable_partition,
+stable_sort,
+swap_ranges,
+transform,
+transform_exclusive_scan,
+transform_inclusive_scan,
+transform_reduce,
+uninitialized_copy,
+uninitialized_fill,
+unique,
+unique_copy
 				</section>
 
 				<section>
-					<h2>C++</h2>
-					<pre><code>
-class condition_variable
-{
-public:
-  condition_variable();
-  condition_variable(condition_variable &&);
-  condition_variable(const condition_variable &) = delete;
-  
-  void wait();
-  void notify_one();
-  void notify_all();
-};					
-					</code></pre>
+					<h2>&lt;epxerimental/algorithms&gt;</h2>
+					<p>
+						<a href="">Parallelism TS</a>
+					</p>
 				</section>
+				
+				<section>
+adjacent_difference,
+adjacent_find,
+all_of,
+any_of,
+copy,
+count,
+equal,
+exclusive_scan,
+fill,
+find,
+find_end,
+find_first_of,
+for_each,
+generate,
+includes,
+inclusive_scan,
+inner_product,
+inplace_merge,
+is_heap,
+is_heap_until,
+is_partitioned,
+is_sorted,
+is_sorted_until,
+lexicographical_compare,
+max_element,
+merge,
+min_element,
+minmax_element,
+mismatch,
+move,
+none_of,
+nth_element,
+partial_sort,
+partition,
+reduce,
+remove,
+replace,
+replace_if,
+reverse,
+reverse_copy,
+rotate,
+rotate_copy,
+search,
+set_difference,
+set_intersection,
+set_symmetric_difference,
+set_union,
+sort,
+stable_partition,
+stable_sort,
+swap_ranges,
+transform,
+transform_exclusive_scan,
+transform_inclusive_scan,
+transform_reduce,
+uninitialized_copy,
+uninitialized_fill,
+unique,
+unique_copy
+				</section>
+
+				<section>
+					<h2>Implementations</h2>
+					<ul>
+					<li><a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/parallel_mode.html">Parallel Mode</a> For GCC</li>
+					<li><a href="https://parallelstl.codeplex.com/">Parallel STL</a> for Windows</li>
+					<li>Clang?</li>
+					</ul>
+					<h1><a href="https://parallelstl.codeplex.com/">Parallel STL</a></h1>
+				</section>
+				
 				
 				<section style="text-align: left;">
 					<h1>THE END</h1>
