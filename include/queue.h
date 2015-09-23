@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <list>
+#include "cs477.h"
 
 
 namespace cs477

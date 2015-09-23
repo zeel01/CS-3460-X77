@@ -111,13 +111,53 @@ namespace cs477
 #ifdef _WIN32
 		if (!SleepConditionVariableCS(&cv, &mtx.cs, INFINITE))
 		{
-			// TODO: Throw
+			throw std::exception();
 		}
 #else
 		auto err = pthread_cond_wait(&cv, mtx.mtx);
 		if (err)
 		{
-			// TODO: throw
+			throw std::exception();
+		}
+#endif
+	}
+
+#include <time.h>
+	inline bool condition_variable::wait(mutex &mtx, std::chrono::milliseconds ms)
+	{
+
+#ifdef _WIN32
+		if (!SleepConditionVariableCS(&cv, &mtx.cs, static_cast<DWORD>(ms.count())))
+		{
+			auto err = GetLastError();
+			if (err == ERROR_TIMEOUT)
+			{
+				return false;
+			}
+			else
+			{
+				throw std::exception();
+			}
+		}
+		return true;
+#else
+		timespec time;
+		auto sec = ms.count() / 1000;
+		time.tv_sec = static_cast<time_t>(sec);
+		time.tv_nsec = (ms.count() - (sec * 1000)) * 10000;
+
+		auto err = pthread_cond_timedwait(&cv, mtx.mtx, &time);
+		if (!err)
+		{
+			return true;
+		}
+		else if (err == ETIMEDOUT)
+		{
+			return false;
+		}
+		else
+		{
+			throw std::exception();
 		}
 #endif
 	}

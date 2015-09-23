@@ -3,6 +3,7 @@
 
 #include "cs477.h"
 
+
 namespace cs477
 {
 
@@ -89,6 +90,7 @@ namespace cs477
 		void notify_all();
 
 		void wait(mutex &mtx);
+		bool wait(mutex &mtx, std::chrono::milliseconds ms);
 
 	private:
 #ifdef _WIN32

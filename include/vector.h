@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <vector>
+#include "cs477.h"
 
 
 namespace cs477
