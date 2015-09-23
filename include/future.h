@@ -22,6 +22,9 @@ namespace cs477
 		future(future &&f);
 		future &operator =(future &&f);
 
+		future(const future &&f) = delete;
+		future &operator =(const future &f) = delete;
+
 	public:
 		void wait();
 

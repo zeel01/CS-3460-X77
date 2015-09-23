@@ -53,12 +53,14 @@ namespace cs477
 
 
 	template <typename Fn>
-	void lock(mutex &mtx, Fn fn)
+	auto lock(mutex &mtx, Fn fn)
 	{
 		mtx.lock();
 		try
 		{
+			fn();
 			mtx.unlock();
+			return t;
 		}
 		catch (...)
 		{
