@@ -122,7 +122,6 @@ namespace cs477
 #endif
 	}
 
-#include <time.h>
 	inline bool condition_variable::wait(mutex &mtx, std::chrono::milliseconds ms)
 	{
 
