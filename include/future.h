@@ -13,6 +13,7 @@ namespace cs477
 
 
 
+	template <typename T>
 	class future
 	{
 	public:
@@ -27,21 +28,34 @@ namespace cs477
 
 	public:
 		void wait();
+		T get();
 
 	private:
 		details::basic_shared_state *state;
 
-		template <typename Fn> friend future queue_work(Fn fn);
+		template <typename Fn> friend future<T> queue_work(Fn fn);
 	};
 
-
-
-	template <typename Iter>
-	future when_all(Iter first, Iter last)
+	template <>
+	class future<void> : public future<char>
 	{
-		
-		for
-	}
-	
+	public:
+		future();
+		~future();
+
+		future(future &&f);
+		future &operator =(future &&f);
+
+		future(const future &&f) = delete;
+		future &operator =(const future &f) = delete;
+
+	public:
+		void wait();
+		void get();
+
+	private:
+		details::basic_shared_state *state;
+	};
+
 
 }

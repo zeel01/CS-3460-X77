@@ -131,7 +131,6 @@ namespace cs477
 
 
 
-
 		class basic_shared_state
 		{
 		public:
@@ -139,18 +138,19 @@ namespace cs477
 
 			enum
 			{
-				ready = 0,
-				is_signaled,
-				is_error,
+				not_ready = 0,
+				has_value,
+				has_error,
 			} state;
 
 			std::exception_ptr ex;
+
 			mutex mtx;
 			condition_variable cv;
 
 
 			basic_shared_state()
-				: ref(1), state(ready)
+				: ref(1), state(not_ready)
 			{
 			}
 
@@ -173,34 +173,34 @@ namespace cs477
 				--ref;
 			}
 
-			void signal()
-			{
-				lock_guard<> guard(mtx);
-				if (state != ready)
-				{
-					// TODO: Throw
-				}
-				state = is_signaled;
-				cv.notify_all();
-			}
-
 			void set_exception(std::exception_ptr ptr)
 			{
 				lock_guard<> guard(mtx);
-				if (state != ready)
+				if (state != not_ready)
 				{
 					// TODO: Throw
 				}
 
-				state = is_error;
+				state = has_error;
 				ex = std::move(ptr);
+				cv.notify_all();
+			}
+
+			void set()
+			{
+				lock_guard<> guard(mtx);
+				if (state != not_ready)
+				{
+					// TODO: Throw
+				}
+				state = has_value;
 				cv.notify_all();
 			}
 
 			void wait()
 			{
 				lock_guard<> guard(mtx);
-				while (state == ready)
+				while (state == not_ready)
 				{
 					cv.wait(mtx);
 				}
@@ -212,25 +212,55 @@ namespace cs477
 				}
 			}
 
-			void execute()
+			virtual void execute() = 0;
+		};
+
+		template <typename T>
+		class basic_shared_state_with_value
+		{
+			basic_shared_state_with_value()
 			{
-				try
-				{
-					(*this)();
-					signal();
-				}
-				catch (...)
-				{
-					set_exception(std::current_exception());
-				}
+			}
+			
+			virtual ~basic_shared_state_with_value()
+			{
 			}
 
-			virtual void operator()() const = 0;
+			void set(T &&val)
+			{
+				lock_guard<> guard(mtx);
+				if (state != not_ready)
+				{
+					// TODO: Throw
+				}
+				state = has_value;
+				value = std::move(val);
+				cv.notify_all();
+			}
+
+			T get()
+			{
+				lock_guard<> guard(mtx);
+				while (state == not_ready)
+				{
+					cv.wait(mtx);
+				}
+
+				if (ex)
+				{
+					auto ptr = std::move(ex);
+					std::rethrow_exception(ptr);
+				}
+
+				return std::move(value);
+			}
+
 		};
 
 
-		template <typename Fn>
-		class shared_state : public basic_shared_state
+
+		template <typename T, typename Fn>
+		class shared_state : public basic_shared_state_with_value<T>
 		{
 		public:
 			shared_state(Fn fn)
@@ -238,14 +268,46 @@ namespace cs477
 			{
 			}
 
-			virtual void operator()() const
+			virtual void execute()
 			{
-				fn();
+				try
+				{
+					auto val = fn();
+					set(std::move(val));
+				}
+				catch (...)
+				{
+					set_exception(std::current_exception());
+				}
 			}
 
 			Fn fn;
 		};
 
+		template <typename Fn>
+		class shared_state<void, Fn> : public basic_shared_state
+		{
+		public:
+			shared_state(Fn fn)
+				: fn(std::move(fn))
+			{
+			}
+
+			virtual void execute()
+			{
+				try
+				{
+					fn();
+					set();
+				}
+				catch (...)
+				{
+					set_exception(std::current_exception());
+				}
+			}
+
+			Fn fn;
+		};
 
 
 

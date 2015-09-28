@@ -4,13 +4,14 @@
 
 namespace cs477
 {
-
-	inline future::future()
+	template <typename T>
+	inline future<T>::future()
 		: state(nullptr)
 	{
 	}
 
-	inline future::~future()
+	template <typename T>
+	inline future<T>::~future()
 	{
 		if (state)
 		{
@@ -18,18 +19,21 @@ namespace cs477
 		}
 	}
 
-	inline future::future(future &&f)
+	template <typename T>
+	inline future<T>::future(future &&f)
 		: state(f.state)
 	{
 		f.state = nullptr;
 	}
 
-	inline future &future::operator =(future &&f)
+	template <typename T>
+	inline future<T> &future<T>::operator =(future &&f)
 	{
 		std::swap(state, f.state);
 	}
 
-	inline void future::wait()
+	template <typename T>
+	inline void future<T>::wait()
 	{
 		if (!state)
 		{
@@ -38,11 +42,21 @@ namespace cs477
 		state->wait();
 	}
 
-
-	template <typename Fn> future queue_work(Fn fn)
+	template <typename T>
+	inline T future<T>::get()
 	{
-		future f;
-		f.state = new details::shared_state<Fn>(std::move(fn));
+		if (!state)
+		{
+			// TODO: Throw
+		}
+		return state->get();
+	}
+
+	template <typename Fn> future<typename std::result_of<Fn()>::type> queue_work(Fn fn)
+	{
+		using result_type = typename std::result_of<Fn()>::type;
+		future<result_type> f;
+		f.state = new details::shared_state<result_type, Fn>(std::move(fn));
 		details::queue_work(f.state);
 		return f;
 	}

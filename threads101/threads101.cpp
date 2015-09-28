@@ -22,11 +22,17 @@ void concurrent_vector();
 void concurrent_queue();
 
 
+#include "include/algorithm.h"
+
 int main()
 {
+	std::vector<int> v;
+	v.resize(1000000);
+
+	auto count = cs477::count(v.begin(), v.end(), 0);
+	printf("%d\n", count);
 
 	return 0;
-
 }
 
 
@@ -38,7 +44,7 @@ void threads_vs_threadpools()
 
 	for (int T = 2; T < (1 << 16); T *= 2)
 	{
-		std::vector<cs477::future> futures;
+		std::vector<cs477::future<void>> futures;
 		futures.reserve(T);
 
 		std::vector<cs477::thread> threads;

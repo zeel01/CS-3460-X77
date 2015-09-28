@@ -154,6 +154,7 @@
     <ClInclude Include="..\include\mutex.h" />
     <ClInclude Include="..\include\thread.h" />
     <ClInclude Include="..\include\vector.h" />
+    <ClInclude Include="include\algorithm.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
