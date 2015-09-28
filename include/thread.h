@@ -20,12 +20,6 @@ namespace cs477
 	class mutex;
 	class condition_variable;
 
-	template <typename T> class future;
-
-	template <typename Fn> future<typename std::result_of<Fn()>::type> queue_work(Fn fn);
-
-
-
 
 
 }

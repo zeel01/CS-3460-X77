@@ -22,7 +22,7 @@
 #include <vector>
 #include <list>
 #include <chrono>
-
+#include <atomic>
 
 
 #include "thread.h"

@@ -26,11 +26,15 @@ void concurrent_queue();
 
 int main()
 {
-	std::vector<int> v;
-	v.resize(1000000);
 
-	auto count = cs477::count(v.begin(), v.end(), 0);
-	printf("%d\n", count);
+	auto f = cs477::queue_work([] { return 15; });
+	auto value = f.get();
+
+	//std::vector<int> v;
+	//v.resize(1000000);
+
+	//auto count = cs477::count(v.begin(), v.end(), 0);
+	//printf("%d\n", count);
 
 	return 0;
 }
@@ -108,7 +112,7 @@ void concurrent_vector()
 {
 	cs477::vector<std::string> list;
 
-	std::vector<cs477::future> futures;
+	std::vector<cs477::future<void>> futures;
 
 	for (int i = 0; i < 200; i++)
 	{
@@ -139,7 +143,7 @@ void concurrent_vector()
 void concurrent_queue()
 {
 	cs477::queue<std::string> queue;
-	std::vector<cs477::future> futures;
+	std::vector<cs477::future<void>> futures;
 
 	for (int i = 0; i < 200; i++)
 	{
