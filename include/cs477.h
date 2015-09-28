@@ -23,6 +23,7 @@
 #include <list>
 #include <chrono>
 #include <atomic>
+#include <cassert>
 
 
 #include "thread.h"

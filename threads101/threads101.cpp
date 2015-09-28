@@ -27,14 +27,24 @@ void concurrent_queue();
 int main()
 {
 
-	auto f = cs477::queue_work([] { return 15; });
-	auto value = f.get();
+	//std::vector<cs477::future<int>> futures;
+	//for (int i = 0; i < 100; i++)
+	//{
+	//	futures.push_back(cs477::queue_work([i]
+	//	{
+	//		return i * i;
+	//	}));
+	//}
 
-	//std::vector<int> v;
-	//v.resize(1000000);
+	//auto result = cs477::when_all<int>(futures.begin(), futures.end());
 
-	//auto count = cs477::count(v.begin(), v.end(), 0);
-	//printf("%d\n", count);
+
+
+	std::vector<int> v;
+	v.resize(1000000);
+
+	auto count = cs477::count(v.begin(), v.end(), 0);
+	printf("%d\n", count);
 
 	return 0;
 }

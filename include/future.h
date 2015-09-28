@@ -9,8 +9,9 @@ namespace cs477
 {
 
 	template <typename T> class future;
+	template <typename T> class promise;
 
-
+	template <typename T, typename Iterator> future<std::vector<T>> when_all(Iterator first, Iterator last);
 
 
 	namespace details
@@ -97,7 +98,10 @@ namespace cs477
 				}
 			}
 
-			virtual void execute() = 0;
+			virtual void execute()
+			{
+				// Non invokable!
+			}
 		};
 
 		template <typename T>
@@ -283,6 +287,7 @@ namespace cs477
 		details::basic_shared_state_with_value<T> *state;
 
 		template <typename Fn> friend future<typename std::result_of<Fn()>::type> queue_work(Fn fn);
+		friend class promise<T>;
 	};
 
 
@@ -341,8 +346,183 @@ namespace cs477
 
 	private:
 		details::basic_shared_state *state;
+
 		template <typename Fn> friend future<typename std::result_of<Fn()>::type> queue_work(Fn fn);
+		friend class promise<void>;
 	};
+
+
+
+
+
+	template <typename T>
+	class promise
+	{
+	public:
+		promise()
+			: state(new details::basic_shared_state_with_value<T>())
+		{
+		}
+
+		virtual ~promise()
+		{
+			if (state)
+			{
+				state->release();
+			}
+		}
+
+		promise(promise &&p)
+			: state(p.state)
+		{
+			p.state = nullptr;
+		}
+
+		promise &operator =(promise &&p)
+		{
+			std::swap(state, p.state);
+			return *this;
+		}
+
+		promise(const promise &&) = delete;
+		promise &operator =(const promise &) = delete;
+
+	public:
+		void set(T value)
+		{
+			if (!state)
+			{
+				// TODO: Throw
+			}
+			state->set(std::move(value));
+		}
+
+		void set_exception(std::exception_ptr err)
+		{
+			if (!state)
+			{
+				// TODO: Throw
+			}
+			state->set_exception(err);
+		}
+
+		future<T> get_future()
+		{
+			future<T> f;
+			state->addref();
+			f.state = state;
+			return f;
+		}
+
+	private:
+		details::basic_shared_state_with_value<T> *state;
+	};
+
+	template <>
+	class promise<void>
+	{
+	public:
+		promise()
+			: state(new details::basic_shared_state())
+		{
+		}
+
+		virtual ~promise()
+		{
+			if (state)
+			{
+				state->release();
+			}
+		}
+
+		promise(promise &&p)
+			: state(p.state)
+		{
+			p.state = nullptr;
+		}
+
+		promise &operator =(promise &&p)
+		{
+			std::swap(state, p.state);
+			return *this;
+		}
+
+		promise(const promise &&) = delete;
+		promise &operator =(const promise &) = delete;
+
+	public:
+		void set()
+		{
+			if (!state)
+			{
+				// TODO: Throw
+			}
+		}
+
+		void set_exception(std::exception_ptr err)
+		{
+			if (!state)
+			{
+				// TODO: Throw
+			}
+			state->set_exception(err);
+		}
+
+		future<void> get_future()
+		{
+			future<void> f;
+			state->addref();
+			f.state = state;
+			return f;
+		}
+
+	private:
+		details::basic_shared_state *state;
+	};
+
+
+
+
+
+	template <typename T, typename Iterator> future<std::vector<T>> when_all(Iterator first, Iterator last)
+	{
+		promise<std::vector<T>> p;
+		auto f = p.get_future();
+
+		std::vector<T> list;
+		std::exception_ptr ex;
+		while (first != last)
+		{
+			try
+			{
+				list.push_back(first->get());
+			}
+			catch (...)
+			{
+				ex = std::current_exception();
+			}
+
+			first++;
+		}
+
+		if (ex)
+		{
+			p.set_exception(ex);
+		}
+		else
+		{
+			p.set(std::move(list));
+		}
+
+		return f;
+	}
+
+
+
+
+
+
+
 
 
 }
