@@ -9,6 +9,10 @@
 
 #include <Windows.h>
 
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+
 #else
 
 #include <pthread.h>
@@ -33,6 +37,9 @@
 #include "vector.h"
 #include "queue.h"
 #include "timer.h"
+#include "net.h"
+#include "http.h"
+#include "data.h"
 
 #include "details.h"
 
@@ -41,3 +48,7 @@
 #include "future.inl"
 #include "vector.inl"
 #include "queue.inl"
+#include "net.inl"
+#include "http.inl"
+#include "data.inl"
+
