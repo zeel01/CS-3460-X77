@@ -157,11 +157,14 @@
     <ClInclude Include="..\include\net.h" />
     <ClInclude Include="..\include\queue.h" />
     <ClInclude Include="..\include\timer.h" />
+    <ClInclude Include="server.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="multi_thread.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="single_thread.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

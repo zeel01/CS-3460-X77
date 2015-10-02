@@ -206,7 +206,7 @@ namespace cs477
 
 
 
-		void queue_work(basic_shared_state *state)
+		inline void queue_work(basic_shared_state *state)
 		{
 			state->addref();
 

@@ -5,10 +5,10 @@ namespace cs477
 	namespace data
 	{
 
-		inline database open(const char *path)
+		inline std::shared_ptr<database> open(const char *path)
 		{
-			database db;
-			int err = sqlite3_open(path, &db.db);
+			auto db = std::make_shared<database>();
+			int err = sqlite3_open(path, &db->db);
 			if (err)
 			{
 				throw std::exception();
@@ -24,6 +24,10 @@ namespace cs477
 
 		inline database::~database()
 		{
+			if (db)
+			{
+				sqlite3_close(db);
+			}
 		}
 
 		inline database::database(database &&db)
@@ -55,7 +59,7 @@ namespace cs477
 			stmt.execute();
 		}
 
-		std::string database::execute_query(const char *sql)
+		inline std::string database::execute_query(const char *sql)
 		{
 			auto stmt = new_statement(sql);
 			return stmt.execute_query();
@@ -69,6 +73,10 @@ namespace cs477
 
 		inline statement::~statement()
 		{
+			if (stmt)
+			{
+				sqlite3_finalize(stmt);
+			}
 		}
 
 		inline statement::statement(statement &&stmt)

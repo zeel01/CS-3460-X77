@@ -19,10 +19,10 @@ namespace cs477
 		queue &operator =(const queue &&) = delete;
 
 	public:
-		void push_back(T &&t);
-		void push_back(const T &t);
+		void push(T &&t);
+		void push(const T &t);
 		
-		T pop_back();
+		T pop();
 
 	public:
 		std::list<T> list;

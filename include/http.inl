@@ -23,14 +23,14 @@ namespace cs477
 			} state;
 		};
 
-		int on_request_begin_message(http_parser *parser)
+		inline int on_request_begin_message(http_parser *parser)
 		{
 			auto state = (http_request_parse_state *)parser->data;
 			state->rq.method = http_method_str(http_method(parser->method));
 			return 0;
 		}
 
-		int on_request_url(http_parser *parser, const char *at, size_t length)
+		inline int on_request_url(http_parser *parser, const char *at, size_t length)
 		{
 			auto state = (http_request_parse_state *)parser->data;
 			state->rq.url.append(at, length);
@@ -38,7 +38,7 @@ namespace cs477
 			return 0;
 		}
 
-		int on_request_header_field(http_parser *parser, const char *at, size_t length)
+		inline int on_request_header_field(http_parser *parser, const char *at, size_t length)
 		{
 			auto state = (http_request_parse_state *)parser->data;
 			if (state->state != http_request_parse_state::name)
@@ -50,7 +50,7 @@ namespace cs477
 			return 0;
 		}
 
-		int on_request_header_value(http_parser *parser, const char *at, size_t length)
+		inline int on_request_header_value(http_parser *parser, const char *at, size_t length)
 		{
 			auto state = (http_request_parse_state *)parser->data;
 			state->rq.headers.back().second.append(at, length);
@@ -58,21 +58,21 @@ namespace cs477
 			return 0;
 		}
 
-		int on_request_headers_complete(http_parser *parser)
+		inline int on_request_headers_complete(http_parser *parser)
 		{
 			auto state = (http_request_parse_state *)parser->data;
 			state->state = http_request_parse_state::body;
 			return 0;
 		}
 
-		int on_request_body(http_parser *parser, const char *at, size_t length)
+		inline int on_request_body(http_parser *parser, const char *at, size_t length)
 		{
 			auto state = (http_request_parse_state *)parser->data;
 			state->rq.body.append(at, length);
 			return 0;
 		}
 
-		int on_request_message_complete(http_parser *parser)
+		inline int on_request_message_complete(http_parser *parser)
 		{
 			auto state = (http_request_parse_state *)parser->data;
 			state->state = http_request_parse_state::done;

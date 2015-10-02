@@ -8,7 +8,7 @@ namespace cs477
 	}
 
 	template <typename T>
-	void queue<T>::push_back(T &&t)
+	void queue<T>::push(T &&t)
 	{
 		lock_guard<> lock(mtx);
 		list.push_back(std::move(t));
@@ -16,7 +16,7 @@ namespace cs477
 	}
 
 	template <typename T>
-	void queue<T>::push_back(const T &t)
+	void queue<T>::push(const T &t)
 	{
 		lock_guard<> lock(mtx);
 		list.push_back(t);
@@ -24,7 +24,7 @@ namespace cs477
 	}
 
 	template <typename T>
-	T queue<T>::pop_back()
+	T queue<T>::pop()
 	{
 		lock_guard<> lock(mtx);
 		while (list.empty())
@@ -32,7 +32,7 @@ namespace cs477
 			cv.wait(mtx);
 		}
 
-		auto t = list.front();
+		auto t = std::move(list.front());
 		list.pop_front();
 		return t;
 

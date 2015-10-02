@@ -21,7 +21,7 @@ inline auto to_seconds(
 
 #ifdef _WIN32
 
-std::tuple<int64_t, int64_t, int64_t> time_point()
+inline std::tuple<int64_t, int64_t, int64_t> time_point()
 {
 	union time
 	{
@@ -38,7 +38,7 @@ std::tuple<int64_t, int64_t, int64_t> time_point()
 }
 
 
-auto diff(const std::tuple<int64_t, int64_t, int64_t> &tp1, const std::tuple<int64_t, int64_t, int64_t> &tp2)
+inline auto diff(const std::tuple<int64_t, int64_t, int64_t> &tp1, const std::tuple<int64_t, int64_t, int64_t> &tp2)
 {
 	auto dt = std::get<0>(tp2) - std::get<0>(tp1);
 	auto dk = std::get<1>(tp2) - std::get<1>(tp1);

@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "cs477.h"
 
 #include "../sqlite/sqlite3.h"
@@ -17,7 +19,7 @@ namespace cs477
 		class statement;
 		class table;
 
-		database open(const char *path);
+		std::shared_ptr<database> open(const char *path);
 
 		class database
 		{
@@ -40,7 +42,7 @@ namespace cs477
 		private:
 			sqlite3 *db;
 
-			friend database open(const char *);
+			friend std::shared_ptr<database> open(const char *);
 		};
 
 
