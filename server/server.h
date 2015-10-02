@@ -21,5 +21,6 @@ namespace single_thread
 namespace multi_thread
 {
 	void run(std::shared_ptr<cs477::data::database> db);
+	void run2(std::shared_ptr<cs477::data::database> db);
 }
 

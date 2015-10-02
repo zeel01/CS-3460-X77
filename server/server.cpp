@@ -13,8 +13,8 @@ int main()
 	auto db = cs477::data::open("c:\\dev\\2015\\my.db");
 	db->execute("create table if not exists data (key text, value text)");
 
-	single_thread::run(db);
-	//multi_thread::run(db);
+	//single_thread::run(db);
+	multi_thread::run2(db);
 
 	cs477::net::finalize();
 	return 0;
