@@ -161,7 +161,7 @@ void concurrent_queue()
 		{
 			char buf[50];
 			sprintf_s(buf, "Hello %d (%d)", i, GetThreadId(GetCurrentThread()));
-			queue.push_back(buf);
+			queue.push(buf);
 		});
 
 		futures.push_back(std::move(f));
@@ -169,7 +169,7 @@ void concurrent_queue()
 
 	for (;;)
 	{
-		auto str = queue.pop_back();
+		auto str = queue.pop();
 		if (str.empty())
 		{
 			break;

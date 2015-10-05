@@ -32,14 +32,10 @@
 
 #include "thread.h"
 #include "mutex.h"
-#include "condition_variable.h"
 #include "future.h"
 #include "vector.h"
 #include "queue.h"
 #include "timer.h"
-#include "net.h"
-#include "http.h"
-#include "data.h"
 
 #include "details.h"
 
@@ -48,7 +44,4 @@
 #include "future.inl"
 #include "vector.inl"
 #include "queue.inl"
-#include "net.inl"
-#include "http.inl"
-#include "data.inl"
 

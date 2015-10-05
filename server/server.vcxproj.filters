@@ -24,9 +24,6 @@
     <ClInclude Include="..\include\net.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\condition_variable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\cs477.h">
       <Filter>Header Files</Filter>
     </ClInclude>

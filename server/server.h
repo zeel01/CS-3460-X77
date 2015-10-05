@@ -5,6 +5,9 @@
 
 #include "../include/cs477.h"
 #include "../include/queue.h"
+#include "../include/data.h"
+#include "../include/net.h"
+#include "../include/http.h"
 
 
 cs477::data::statement make_query(cs477::data::database &db, const cs477::net::http_request &request);

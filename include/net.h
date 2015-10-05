@@ -68,3 +68,5 @@ namespace cs477
 
 }
 
+
+#include "net.inl"

@@ -75,3 +75,6 @@ namespace cs477
 	}
 
 }
+
+
+#include "data.inl"

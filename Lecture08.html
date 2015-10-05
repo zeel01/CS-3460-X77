@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Async IO</title>
+
+		<meta name="author" content="Tyler Sutton">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<div class="slides">
+
+				<section>
+				<h1>Sockets</h1>
+				<pre><code>
+
+SOCKET socket(int af, int type, int protocol);
+SOCKET accept(SOCKET s, sockaddr *addr, int *addrlen);
+int connect(SOCKET s, const sockaddr *name, int namelen);
+int send(SOCKET s, const char *buf, int len, int flags);
+int recv(SOCKET s, char *buf, int len, int flags);
+
+				</pre></code>
+				</section>
+			
+				<section>
+				<h1>Multiplexing</h1>
+				<pre><code>
+
+struct fd_set {
+  u_int fd_count;
+  SOCKET  fd_array[FD_SETSIZE];
+};
+
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const  timeval *timeout);
+
+				</pre></code>
+				</section>
+
+				<section>
+				<h1>Multiplexing</h1>
+				<pre><code>
+SOCKET sockets[10] = ...;
+fd_set readset;
+int result;
+do {
+  FD_ZERO(&readset);
+  for (int i = 0; i < 10; i++) { 
+    FD_SET(sockets[i], &readset);
+  }
+  result = select(0, &readset, nullptr, nullptr, nullptr);
+} while (result == -1 && errno == EINTR);
+				</pre></code>
+				</section>
+
+				<section>
+				<h1>Multiplexing</h1>
+				<pre><code>
+if (result > 0) {
+  for (int i = 0; i < 10; i++) {
+    if (FD_ISSET(sockets[i], &readset)) {
+      result = recv(sockets[i], some_buffer, some_length, 0);
+      if (result == 0) {
+        closesocket(sockets[i]);
+      }
+      else {
+        // TODO: Handle data
+      }
+    }
+  }
+}
+else if (result < 0) {
+  // TODO: Handle error
+}
+				</pre></code>
+				</section>
+				
+				<section>
+				<h1>Non-Blocking</h1>
+				<pre><code>
+int WSAEventSelect(SOCKET s, HANDLE hEventObject, long lNetworkEvents);
+DWORD WaitForMultipleObjects(DWORD  nCount, const HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds);
+int WSAEnumNetworkEvents(SOCKET s, WSAEVENT hEventObject, LPWSANETWORKEVENTS lpNetworkEvents);
+				</pre></code>
+				</section>				
+				
+				<section>
+				<h1>Non-Blocking</h1>
+				<pre><code>
+SOCKET sockets[10] = ...;
+HANDLE events[10] = ...;
+for (int i = 0; i < 10; i++) 
+{
+  WSAEventSelect(sockets[i], events[i], FD_READ | FD_CLOSE);
+}
+				</pre></code>
+				</section>		
+
+				<section>
+				<h1>Non-Blocking</h1>
+				<pre><code>
+for (;;) {
+  auto result = WaitForMultipleObjects(10, events, FALSE, INFINITE); 
+  if (result != WAIT_FAILED) {
+  {
+    auto index = result = WAIT_OBJECT_0;
+    WSANETWORKEVENTS net_events;
+    if (WSAEnumNetworkEvents(sockets[index], events[index], &net_events) != SOCKET_ERROR))
+    {
+      if (net_events.lNetworkEvents & FD_READ_BIT)
+      {
+  	    recv(sock, buf, len);
+      }
+    } 
+  }
+}
+				</pre></code>
+				</section>		
+				
+				<section style="text-align: left;">
+					<h1>THE END</h1>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>

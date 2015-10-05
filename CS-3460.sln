@@ -12,6 +12,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "conv", "conv\conv.vcxproj", "{C10D197B-09C3-4EA7-A36C-BE9BB42D3985}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "server\server.vcxproj", "{1AA9751F-6384-4043-86E2-2CE805E20BA9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5AB03A33-BAF4-4564-92A9-9EFC6934792C} = {5AB03A33-BAF4-4564-92A9-9EFC6934792C}
+		{6107E49B-A4E1-4247-8F2E-DAB64BEB376F} = {6107E49B-A4E1-4247-8F2E-DAB64BEB376F}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "http_parser", "http_parser\http_parser.vcxproj", "{6107E49B-A4E1-4247-8F2E-DAB64BEB376F}"
 EndProject

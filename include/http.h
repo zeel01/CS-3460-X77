@@ -35,3 +35,5 @@ namespace cs477
 	}
 
 }
+
+#include "http.inl"

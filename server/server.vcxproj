@@ -148,7 +148,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\condition_variable.h" />
     <ClInclude Include="..\include\cs477.h" />
     <ClInclude Include="..\include\data.h" />
     <ClInclude Include="..\include\future.h" />
