@@ -9,7 +9,7 @@ namespace cs477
 	namespace net
 	{
 
-		struct http_request_parse_state
+		struct http_request_parse_state : public http_parser, public http_parser_settings
 		{
 			http_request rq;
 
@@ -83,18 +83,16 @@ namespace cs477
 		{
 			http_request_parse_state state;
 
-			http_parser_settings callbacks = { 0 };
-			callbacks.on_message_begin = on_request_begin_message;
-			callbacks.on_url = on_request_url;
-			callbacks.on_header_field = on_request_header_field;
-			callbacks.on_header_value = on_request_header_value;
-			callbacks.on_headers_complete = on_request_headers_complete;
-			callbacks.on_body = on_request_body;
-			callbacks.on_message_complete = on_request_message_complete;
+			state.on_message_begin = on_request_begin_message;
+			state.on_url = on_request_url;
+			state.on_header_field = on_request_header_field;
+			state.on_header_value = on_request_header_value;
+			state.on_headers_complete = on_request_headers_complete;
+			state.on_body = on_request_body;
+			state.on_message_complete = on_request_message_complete;
 
-			http_parser parser;
-			http_parser_init(&parser, HTTP_REQUEST);
-			parser.data = &state;
+			http_parser_init(&state, HTTP_REQUEST);
+			state.data = &state;
 
 			std::string str;
 			str.resize(65536);
@@ -102,7 +100,7 @@ namespace cs477
 			for (;;)
 			{
 				auto len = sock.recv(&str.front(), 65536);
-				auto parsed = http_parser_execute(&parser, &callbacks, str.c_str(), len);
+				auto parsed = http_parser_execute(&state, &state, str.c_str(), len);
 				if (parsed != len)
 				{
 					throw std::exception();
@@ -116,6 +114,42 @@ namespace cs477
 
 			return std::move(state.rq);
 		}
+
+		inline future<http_request> read_http_request_async(socket sock)
+		{
+			auto state = std::make_shared<http_request_parse_state>();
+
+			state->on_message_begin = on_request_begin_message;
+			state->on_url = on_request_url;
+			state->on_header_field = on_request_header_field;
+			state->on_header_value = on_request_header_value;
+			state->on_headers_complete = on_request_headers_complete;
+			state->on_body = on_request_body;
+			state->on_message_complete = on_request_message_complete;
+
+			http_parser_init(state.get(), HTTP_REQUEST);
+			state->data = state.get();
+
+			return do_while([state, sock] () mutable
+			{
+				return sock.recv_async().then([state] (future<std::string> f) mutable
+				{
+					auto str = f.get();
+					auto parsed = http_parser_execute(state.get(), state.get(), str.c_str(), str.length());
+					if (parsed != str.length())
+					{
+						throw std::exception();
+					}
+
+					return state->state != http_request_parse_state::done;
+				});
+			}).then([state] (future<void> f)
+			{
+				return std::move(state->rq);
+			});
+
+		}
+
 
 		inline void write_http_response(socket &sock, const http_response &rsp)
 		{
@@ -144,6 +178,35 @@ namespace cs477
 
 			sock.send(text.c_str(), text.length());
 		}
+
+		inline future<void> write_http_response_async(socket sock, const http_response &rsp)
+		{
+			char line[128];
+
+			std::string text;
+
+			sprintf_s(line, "HTTP/1.1 %d %s\r\n", rsp.status, rsp.message.c_str());
+			text.append(line);
+
+			if (rsp.body.length())
+			{
+				sprintf_s(line, "Content-Length : %d\r\n", rsp.body.length());
+				text.append(line);
+			}
+
+			for (auto &hdr : rsp.headers)
+			{
+				sprintf_s(line, "%s : %s\r\n", hdr.first.c_str(), hdr.second.c_str());
+				text.append(line);
+			}
+
+			text.append("\r\n");
+
+			text.append(rsp.body);
+
+			return sock.send_async(text.c_str(), text.length());
+		}
+
 
 	}
 }

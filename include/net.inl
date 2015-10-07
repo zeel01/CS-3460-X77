@@ -1,3 +1,4 @@
+#include "net.h"
 
 
 namespace cs477
@@ -43,35 +44,59 @@ namespace cs477
 
 
 		inline socket::socket()
-			: handle(INVALID_SOCKET)
+			: sock(nullptr)
 		{
 		}
 
 		inline socket::~socket()
 		{
-			if (handle != INVALID_SOCKET)
+			if (sock)
 			{
-				closesocket(handle);
+				sock->release();
 			}
 		}
 
 		inline socket::socket(socket &&sock)
-			: handle(sock.handle)
+			: sock(sock.sock)
 		{
-			sock.handle = INVALID_SOCKET;
+			sock.sock = nullptr;
 		}
 
 		inline socket &socket::operator=(socket &&sock)
 		{
-			std::swap(handle, sock.handle);
+			std::swap(this->sock, sock.sock);
+			return *this;
+		}
+
+		inline socket::socket(const socket &sock)
+			: sock(sock.sock)
+		{
+			this->sock->addref();
+		}
+
+		inline socket &socket::operator=(const socket &sock)
+		{
+			if (this->sock != sock.sock)
+			{
+				if (this->sock) 
+				{
+					this->sock->release();
+				}
+				this->sock = sock.sock;
+				if (this->sock)
+				{
+					this->sock->addref();
+				}
+			}
 			return *this;
 		}
 
 		inline void socket::connect(const sockaddr_in &addr)
 		{
-			handle = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+			sock = new details::socket;
+			sock->handle = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, 0, WSA_FLAG_OVERLAPPED);
 
-			auto err = ::connect(handle, (sockaddr *)&addr, sizeof(sockaddr_in));
+			auto err = ::connect(sock->handle, (sockaddr *)&addr, sizeof(sockaddr_in));
 			if (err == SOCKET_ERROR)
 			{
 				throw std::exception();
@@ -80,13 +105,18 @@ namespace cs477
 
 		inline void socket::send(const char *buf, size_t len)
 		{
+			if (!sock) 
+			{
+				throw std::exception();
+			}
+
 			auto ptr = buf;
 			auto end = buf + len;
 
 			while (ptr < end)
 			{
 				auto bytes = static_cast<int>(min(end - ptr, 1048576));
-				auto sent = ::send(handle, ptr, bytes, 0);
+				auto sent = ::send(sock->handle, ptr, bytes, 0);
 				if (sent == SOCKET_ERROR || sent == 0)
 				{
 					throw std::exception();
@@ -97,7 +127,12 @@ namespace cs477
 
 		inline size_t socket::recv(char *buf, size_t len)
 		{
-			auto recvd = ::recv(handle, buf, static_cast<int>(len), 0);
+			if (!sock)
+			{
+				throw std::exception();
+			}
+
+			auto recvd = ::recv(sock->handle, buf, static_cast<int>(len), 0);
 			if (recvd == SOCKET_ERROR || recvd == 0)
 			{
 				throw std::exception();
@@ -106,6 +141,35 @@ namespace cs477
 			return static_cast<size_t>(recvd);
 		}
 
+		inline void socket::associate_with_threadpool()
+		{
+			if (!sock)
+			{
+				throw std::exception();
+			}
+
+			sock->associate_with_threadpool();
+		}
+
+		inline future<void> socket::send_async(const char *buf, size_t len)
+		{
+			if (!sock)
+			{
+				throw std::exception();
+			}
+
+			return sock->send(buf, len);
+		}
+
+		inline future<std::string> socket::recv_async()
+		{
+			if (!sock)
+			{
+				throw std::exception();
+			}
+
+			return sock->recv(65536);
+		}
 
 		inline acceptor::acceptor()
 			: handle(INVALID_SOCKET)
@@ -122,7 +186,8 @@ namespace cs477
 
 		inline void acceptor::listen(const sockaddr_in &addr)
 		{
-			handle = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+			//handle = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+			handle = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, 0, WSA_FLAG_OVERLAPPED);
 
 			auto err = ::bind(handle, (sockaddr *)&addr, sizeof(sockaddr_in));
 			if (err == SOCKET_ERROR)
@@ -140,8 +205,9 @@ namespace cs477
 		inline socket acceptor::accept()
 		{
 			socket sock;
-			sock.handle = ::accept(handle, nullptr, 0);
-			if (sock.handle == INVALID_SOCKET)
+			sock.sock = new details::socket();
+			sock.sock->handle = ::accept(handle, nullptr, 0);
+			if (sock.sock->handle == INVALID_SOCKET)
 			{
 				throw std::exception();
 			}

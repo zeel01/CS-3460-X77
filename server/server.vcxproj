@@ -161,6 +161,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="async.cpp" />
     <ClCompile Include="multi_thread.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="single_thread.cpp" />

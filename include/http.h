@@ -20,6 +20,7 @@ namespace cs477
 		};
 
 		http_request read_http_request(socket &sock);
+		future<http_request> read_http_request_async(socket sock);
 
 		class http_response
 		{
@@ -31,6 +32,7 @@ namespace cs477
 		};
 
 		void write_http_response(socket &sock, const http_response &rsp);
+		future<void> write_http_response_async(socket sock, const http_response &rsp);
 
 	}
 

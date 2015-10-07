@@ -27,3 +27,8 @@ namespace multi_thread
 	void run2(std::shared_ptr<cs477::data::database> db);
 }
 
+namespace async
+{
+	void run(std::shared_ptr<cs477::data::database> db);
+}
+
