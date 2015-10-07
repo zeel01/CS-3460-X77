@@ -146,6 +146,170 @@ for (;;) {
 				</pre></code>
 				</section>		
 				
+				<section>
+				<h1>Asynchronous IO</h1>
+				</section>			
+				
+				<section>
+				<h1>*NIX</h1>
+				<ul>
+				<li><h2>POSIX - AIO</h2></li>
+				<li><h2>Linux - epoll</h2></li>
+				<li><h2>BSD - kqueue</h2></li>
+				</ul>
+				</section>			
+
+				<section>
+				<h1>epoll</h1>
+				<pre><code>
+int epoll_create1(...);
+int epoll_ctl(...);
+int epoll_wait(...);
+				</pre></code>
+				</section>			
+
+				<section>
+				<h1>epoll</h1>
+				<pre><code>
+auto epfd = epoll_create1(EPOLL_QUEUE_LEN);
+...
+int client_sock = ...;
+epoll_event ev;
+ev.events = EPOLLIN | EPOLLPRI | EPOLLERR | EPOLLHUP;
+ev.data.fd = client_sock;
+int res = epoll_ctl(epfd, EPOLL_CTL_ADD, client_sock, &ev);
+				</pre></code>
+				</section>			
+				
+				<section>
+				<h1>epoll</h1>
+				<pre><code>
+while (1) {
+  // wait for something to do...
+  int nfds = epoll_wait(epfd, events, MAX_EPOLL_EVENTS_PER_RUN, EPOLL_RUN_TIMEOUT);
+  if (nfds >= 0) 
+  {
+    // for each ready socket
+    for(int i = 0; i < nfds; i++) {
+      int fd = events[i].data.fd;
+      read(fd, ...);
+  }
+}
+				</pre></code>
+				</section>			
+				
+				
+				<section>
+				<h1>Windows</h1>
+				<pre><code>
+BOOL ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped);
+BOOL WriteFile(HANDLE hFile, LPCVOID lpBuffer, DWORD nNumberOfBytesToWrite, LPDWORD lpNumberOfBytesWritten, LPOVERLAPPED lpOverlapped);
+int WSASend(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesSent, DWORD dwFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+int WSARecv(SOCKET s, LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesRecvd, LPDWORD lpFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
+
+...
+				</pre></code>
+				And many, many more.
+				</section>			
+				
+				<section>
+				<h1>Overlapped</h1>
+				<pre><code>
+typedef struct _OVERLAPPED {
+  ULONG_PTR Internal;
+  ULONG_PTR InternalHigh;
+  union {
+    struct {
+      DWORD Offset;
+      DWORD OffsetHigh;
+    } DUMMYSTRUCTNAME;
+    PVOID Pointer;
+  } DUMMYUNIONNAME;
+  HANDLE  hEvent;
+} OVERLAPPED, *LPOVERLAPPED;
+				</pre></code>
+				Mostly, we just set all this to 0.
+				</section>			
+				
+				<section>
+				<h1>IO Completion Ports</h1>
+				<pre><code>
+HANDLE CreateIoCompletionPort(HANDLE FileHandle, HANDLE ExistingCompletionPort, ULONG_PTR CompletionKey, DWORD NumberOfConcurrentThreads);
+BOOL GetQueuedCompletionStatus(HANDLE CompletionPort, LPDWORD lpNumberOfBytes, PULONG_PTR lpCompletionKey, LPOVERLAPPED *lpOverlapped, DWORD dwMilliseconds);
+				</pre></code>
+				</section>				
+
+				<section>
+				<h1>IO Completion Ports</h1>
+				<pre><code>
+auto iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 8);
+for (int i = 0; i < 8; i++)
+{
+  create_thread([iocp] {
+    for (;;) {
+	  DWORD bytes = 0;
+	  ULONG_PTR key = 0;
+	  OVERLAPPED *ol = 0;	
+	  auto ok = GetQueuedCompletionPacket(iocp, &bytes, &key, &ol, INFINITE);
+	  if (ok)
+	  {
+	    // Handle event.
+	  }
+  });
+}
+				</pre></code>
+				</section>				
+				
+				<section>
+				<h1>IO Completion Ports</h1>
+				<pre><code>
+SOCKET s = ...;
+CreateIoCompletionPort((HANDLE)s, iocp, nullptr, 0);
+
+WSABUF bufs = { 65536, io_buffer };
+auto ol = new OVERLAPPED{ 0 };
+WSARecv(s, &bufs, nullptr, nullptr, &ol, nullptr);
+				</pre></code>
+				</section>			
+				
+				<section>
+				This is OK, but I'd rather not manage my own threads...
+				</section>				
+				
+				<section>
+				when Windows can do it for me!
+				</section>				
+
+				<section>
+				<h1>Threadpool IO</h1>
+				<pre><code>
+PTP_IO CreateThreadpoolIo(HANDLE fl, PTP_WIN32_IO_CALLBACK pfnio, PVOID pv, PTP_CALLBACK_ENVIRON pcbe);
+VOID StartThreadpoolIo(PTP_IO pio);
+VOID CloseThreadpoolIo(PTP_IO pio);
+				</pre></code>
+				</section>							
+				
+				<section>
+				<pre><code>
+SOCKET s = ...;
+auto io = CreateThreadpoolIo((HANDLE)s, io_callback, nullptr, nullptr);
+...
+StartThreadpool(io);
+WSARecv(...);
+				</pre></code>
+				</section>		
+				
+				<section>
+				<pre><code>
+VOID __stdcall io_callback(PTP_CALLBACK_INSTANCE Instance, PVOID Context, PVOID Overlapped, ULONG IoResult, ULONG_PTR NumberOfBytesTransferred, PTP_IO Io)
+{
+  // TODO: Handle event.
+}
+			</pre></code>
+				</section>		
+				
+				
+				
 				<section style="text-align: left;">
 					<h1>THE END</h1>
 				</section>
