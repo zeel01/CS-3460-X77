@@ -5,52 +5,73 @@
 
 namespace cs477
 {
+	namespace net
+	{
+		class socket;
+		class acceptor;
+	}
 
 	namespace details
 	{
 		class socket;
 
-		class async_io
+		struct overlapped
 		{
-		public:
 			enum io_type
 			{
+				accept,
 				recv,
 				send,
 			};
-		public:
-			async_io(io_type type)
-				: type(type)
-			{
-				memset(&ol, 0, sizeof(OVERLAPPED));
-			}
-	
-		public:
+
 			OVERLAPPED ol;
 			io_type type;
-			std::string buf;
 		};
 
-		class async_send : public async_io
+		class async_accept
+		{
+		public:
+			async_accept(std::function<void(net::socket)> fn)
+				: fn(std::move(fn))
+			{
+				memset(&ol.ol, 0, sizeof(OVERLAPPED));
+				ol.type = overlapped::accept;
+			}
+			
+			void call_handler();
+		
+			overlapped ol;
+			std::function<void(net::socket)> fn;
+			socket *sock;
+			char buf[2 * (sizeof(sockaddr_in) + 16)];
+		};
+
+		class async_send
 		{
 		public:
 			async_send()
-				: async_io(async_io::send)
 			{
+				memset(&ol.ol, 0, sizeof(OVERLAPPED));
+				ol.type = overlapped::send;
 			}
 
+			overlapped ol;
+			std::string buf;
 			promise<void> promise;
 		};
 
-		class async_recv : public async_io
+		class async_recv 
 		{
 		public:
 			async_recv(size_t count)
-				: async_io(async_io::recv)
 			{
+				memset(&ol.ol, 0, sizeof(OVERLAPPED));
+				ol.type = overlapped::recv;
 				buf.resize(count);
 			}
 
+			overlapped ol;
+			std::string buf;
 			promise<std::string> promise;
 		};
 
@@ -85,36 +106,78 @@ namespace cs477
 				if (ref == 1)
 				{
 					delete this;
+					return;
 				}
 				--ref;
 			}
 
 		public:
-			void associate_with_threadpool()
+			void create(SOCKET sock)
 			{
-				io = CreateThreadpoolIo(reinterpret_cast<HANDLE>(handle), io_callback, nullptr, nullptr);
-				if (!io)
+				if (sock == INVALID_SOCKET)
 				{
-					throw std::exception();
+					handle = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, 0, WSA_FLAG_OVERLAPPED);
+
+					GUID guid = WSAID_ACCEPTEX;
+					DWORD bytes = 0;
+					WSAIoctl(handle, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(GUID), &fn_accept, sizeof(fn_accept), &bytes, nullptr, nullptr);
+				}
+				else
+				{
+					handle = sock;
+				}
+
+				io = CreateThreadpoolIo(reinterpret_cast<HANDLE>(handle), io_callback, this, nullptr);
+			}
+
+			template <typename Fn>
+			void socket::accept(Fn fn)
+			{
+				auto op = new async_accept(std::move(fn));
+				accept(op);
+			}
+
+		private:
+			void socket::accept(async_accept *op)
+			{
+				op->sock = new socket();
+				op->sock->create(INVALID_SOCKET);
+
+				memset(&op->ol.ol, 0, sizeof(OVERLAPPED));
+				addref();
+				StartThreadpoolIo(io);
+
+				if (!fn_accept(handle, op->sock->handle, op->buf, 0, (sizeof(sockaddr_in) + 16), (sizeof(sockaddr_in) + 16), nullptr, &op->ol.ol))
+				{
+					if (GetLastError() != ERROR_IO_PENDING)
+					{
+						release();
+						CancelThreadpoolIo(io);
+						delete op;
+						throw std::exception();
+					}
 				}
 			}
 
+		public:
 			future<void> send(const char *buf, size_t len)
 			{
 				auto op = new async_send();
 				op->buf = { buf, len };
 				auto f = op->promise.get_future();
 
+				addref();
 				StartThreadpoolIo(io);
 
 				WSABUF wsabuf;
 				wsabuf.buf = const_cast<char *>(buf);
 				wsabuf.len = len;
-				auto result = WSASend(handle, &wsabuf, 1, nullptr, 0, &op->ol, nullptr);
+				auto result = WSASend(handle, &wsabuf, 1, nullptr, 0, &op->ol.ol, nullptr);
 				if (result == SOCKET_ERROR)
 				{
 					if (GetLastError() != ERROR_IO_PENDING)
 					{
+						release();
 						CancelThreadpoolIo(io);
 						delete op;
 						throw std::exception();
@@ -127,19 +190,22 @@ namespace cs477
 			future<std::string> recv(size_t len)
 			{
 				auto op = new async_recv(len);
+
 				auto f = op->promise.get_future();
 
+				addref();
 				StartThreadpoolIo(io);
 
 				WSABUF wsabuf;
 				wsabuf.buf = const_cast<char *>(op->buf.c_str());
 				wsabuf.len = len;
 				DWORD flags = 0;
-				auto result = WSARecv(handle, &wsabuf, 1, nullptr, &flags, &op->ol, nullptr);
+				auto result = WSARecv(handle, &wsabuf, 1, nullptr, &flags, &op->ol.ol, nullptr);
 				if (result == SOCKET_ERROR)
 				{
 					if (GetLastError() != ERROR_IO_PENDING)
 					{
+						release();
 						CancelThreadpoolIo(io);
 						delete op;
 						throw std::exception();
@@ -150,12 +216,14 @@ namespace cs477
 			}
 
 		private:
-			static void __stdcall io_callback(PTP_CALLBACK_INSTANCE, PVOID, PVOID Overlapped, ULONG IoResult, ULONG_PTR NumberOfBytesTransferred, PTP_IO)
+			static void __stdcall io_callback(PTP_CALLBACK_INSTANCE, PVOID Context, PVOID Overlapped, ULONG IoResult, ULONG_PTR NumberOfBytesTransferred, PTP_IO)
 			{
-				auto io = (async_io *)Overlapped;
-				if (io->type == async_io::recv)
+				auto ol = (overlapped *)Overlapped;
+				auto sock = (socket *)Context;
+
+				if (ol->type == overlapped::recv)
 				{
-					auto recv = static_cast<async_recv *>(io);
+					auto recv = reinterpret_cast<async_recv *>(ol);
 					if (IoResult || !NumberOfBytesTransferred)
 					{
 						recv->promise.set_exception(std::make_exception_ptr(std::exception{}));
@@ -164,9 +232,9 @@ namespace cs477
 					recv->promise.set(std::move(recv->buf));
 					delete recv;
 				}
-				else if (io->type == async_io::send)
+				else if (ol->type == overlapped::send)
 				{
-					auto send = static_cast<async_send *>(io);
+					auto send = reinterpret_cast<async_send *>(ol);
 					if (IoResult || !NumberOfBytesTransferred)
 					{
 						send->promise.set_exception(std::make_exception_ptr(std::exception{}));
@@ -174,10 +242,41 @@ namespace cs477
 					send->promise.set();
 					delete send;
 				}
+				else if (ol->type == overlapped::accept)
+				{
+					auto accept = reinterpret_cast<async_accept *>(ol);
+					if (!IoResult)
+					{
+						auto err = setsockopt(accept->sock->handle, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char *)&sock->handle, sizeof(SOCKET));
+						if (err == SOCKET_ERROR)
+						{
+							IoResult = GetLastError();
+						}
+					}
+					if (!IoResult)
+					{
+						try
+						{
+							accept->call_handler();
+							// Queue another accept.
+							sock->accept(accept);
+						}
+						catch (...)
+						{
+							delete accept;
+						}
+					}
+					else
+					{
+						delete accept;
+					}
+				}
 				else
 				{
 					// ?
 				}
+
+				sock->release();
 			}
 
 		public:
@@ -185,6 +284,8 @@ namespace cs477
 
 			SOCKET handle;
 			PTP_IO io;
+
+			LPFN_ACCEPTEX fn_accept;
 		};
 
 	}
@@ -192,8 +293,6 @@ namespace cs477
 
 	namespace net
 	{
-		class socket;
-		class acceptor;
 
 		void initialize();
 		void finalize();
@@ -220,14 +319,13 @@ namespace cs477
 			size_t recv(char *buf, size_t len);
 
 		public:
-			void associate_with_threadpool();
-
 			future<void> send_async(const char *buf, size_t len);
 			future<std::string> recv_async();
 
 		private:
 			details::socket *sock;
 			friend class acceptor;
+			friend class details::async_accept;
 		};
 
 
@@ -246,9 +344,10 @@ namespace cs477
 		public:
 			void listen(const sockaddr_in &in);
 			socket accept();
+			template <typename Fn> void accept_async(Fn fn);
 
 		private:
-			SOCKET handle;
+			details::socket *sock;
 		};
 
 

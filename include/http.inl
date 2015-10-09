@@ -143,7 +143,7 @@ namespace cs477
 
 					return state->state != http_request_parse_state::done;
 				});
-			}).then([state] (future<void> f)
+			}).then([state, sock] (future<void> f)
 			{
 				return std::move(state->rq);
 			});

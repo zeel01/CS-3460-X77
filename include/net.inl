@@ -4,6 +4,19 @@
 namespace cs477
 {
 
+	namespace details
+	{
+		inline void async_accept::call_handler()
+		{
+			net::socket s;
+			s.sock = sock;
+			sock = nullptr;
+			fn(s);
+		}
+
+	}
+
+
 	namespace net
 	{
 
@@ -94,7 +107,7 @@ namespace cs477
 		inline void socket::connect(const sockaddr_in &addr)
 		{
 			sock = new details::socket;
-			sock->handle = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, 0, WSA_FLAG_OVERLAPPED);
+			sock->create(INVALID_SOCKET);
 
 			auto err = ::connect(sock->handle, (sockaddr *)&addr, sizeof(sockaddr_in));
 			if (err == SOCKET_ERROR)
@@ -141,16 +154,6 @@ namespace cs477
 			return static_cast<size_t>(recvd);
 		}
 
-		inline void socket::associate_with_threadpool()
-		{
-			if (!sock)
-			{
-				throw std::exception();
-			}
-
-			sock->associate_with_threadpool();
-		}
-
 		inline future<void> socket::send_async(const char *buf, size_t len)
 		{
 			if (!sock)
@@ -172,30 +175,30 @@ namespace cs477
 		}
 
 		inline acceptor::acceptor()
-			: handle(INVALID_SOCKET)
+			: sock(nullptr)
 		{
 		}
 
 		inline acceptor::~acceptor()
 		{
-			if (handle != INVALID_SOCKET)
+			if (sock)
 			{
-				closesocket(handle);
+				sock->release();
 			}
 		}
 
 		inline void acceptor::listen(const sockaddr_in &addr)
 		{
-			//handle = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-			handle = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, 0, WSA_FLAG_OVERLAPPED);
+			sock = new details::socket();
+			sock->create(INVALID_SOCKET);
 
-			auto err = ::bind(handle, (sockaddr *)&addr, sizeof(sockaddr_in));
+			auto err = ::bind(sock->handle, (sockaddr *)&addr, sizeof(sockaddr_in));
 			if (err == SOCKET_ERROR)
 			{
 				throw std::exception();
 			}
 
-			err = ::listen(handle, SOMAXCONN);
+			err = ::listen(sock->handle, SOMAXCONN);
 			if (err == SOCKET_ERROR)
 			{
 				throw std::exception();
@@ -204,17 +207,23 @@ namespace cs477
 
 		inline socket acceptor::accept()
 		{
-			socket sock;
-			sock.sock = new details::socket();
-			sock.sock->handle = ::accept(handle, nullptr, 0);
-			if (sock.sock->handle == INVALID_SOCKET)
+			auto s = ::accept(sock->handle, nullptr, 0);
+			if (s == INVALID_SOCKET)
 			{
 				throw std::exception();
 			}
 
+			socket sock;
+			sock.sock = new details::socket();
+			sock.sock->create(s);
+
 			return sock;
 		}
 
+		template <typename Fn> void acceptor::accept_async(Fn fn)
+		{
+			sock->accept(fn);
+		}
 	}
 
 

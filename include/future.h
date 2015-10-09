@@ -35,7 +35,6 @@ namespace cs477
 			mutex mtx;
 			condition_variable cv;
 
-
 			basic_shared_state()
 				: ref(1), state(not_ready)
 			{
@@ -43,6 +42,21 @@ namespace cs477
 
 			virtual ~basic_shared_state()
 			{
+				if (ex)
+				{
+					try
+					{
+						std::rethrow_exception(ex);
+					}
+					catch (std::exception &ex)
+					{
+						printf("Warning: uncaught exception! %s\n", ex.what());
+					}
+					catch (...)
+					{
+						printf("Warning: uncaught exception!\n");
+					}
+				}
 			}
 
 			void addref()
@@ -163,6 +177,10 @@ namespace cs477
 			{
 			}
 
+			virtual ~shared_state()
+			{
+			}
+
 			virtual void execute()
 			{
 				try
@@ -185,6 +203,10 @@ namespace cs477
 		public:
 			shared_state(Fn fn)
 				: fn(std::move(fn))
+			{
+			}
+
+			virtual ~shared_state()
 			{
 			}
 
@@ -296,13 +318,10 @@ namespace cs477
 			}
 
 			lock_guard<> lock(state->mtx);
-			future<decltype(fn(std::move(*this)))> f;
-
 			if (state->state == details::basic_shared_state::not_ready) 
 			{
 				// Just queue a thread to wait on the cv.  
-				// not the bes
-				f = queue_work([f = std::move(*this), fn = std::move(fn)] () mutable
+				return queue_work([f = std::move(*this), fn = std::move(fn)] () mutable
 				{
 					f.wait();
 					return fn(std::move(f));
@@ -310,9 +329,8 @@ namespace cs477
 			}
 			else
 			{
-				f = make_ready_future(fn(std::move(*this)));
+				return make_ready_future(fn(std::move(*this)));
 			}
-			return f;
 		}
 
 	public:
@@ -384,13 +402,12 @@ namespace cs477
 			}
 
 			lock_guard<> lock(state->mtx);
-			future<decltype(fn(std::move(*this)))> f;
 
 			if (state->state == details::basic_shared_state::not_ready)
 			{
 				// Just queue a thread to wait on the cv.  
 				// not the bes
-				f = queue_work([f = std::move(*this), fn = std::move(fn)]() mutable
+				return queue_work([f = std::move(*this), fn = std::move(fn)]() mutable
 				{
 					f.wait();
 					return fn(std::move(f));
@@ -398,9 +415,8 @@ namespace cs477
 			}
 			else
 			{
-				f = make_ready_future(fn(std::move(*this)));
+				return make_ready_future(fn(std::move(*this)));
 			}
-			return f;
 		}
 
 	private:

@@ -13,20 +13,24 @@ int main()
 	auto db = cs477::data::open("c:\\dev\\2015\\my.db");
 	db->execute("create table if not exists data (key text, value text)");
 
+
 	//cs477::queue_work([]
 	//{
-	//	cs477::net::socket sock;
-	//	sock.connect(cs477::net::resolve_address("localhost", 8080));
-	//	std::string str =
-	//		"GET /test HTTP/1.1\r\n"
-	//		"\r\n";
-	//	sock.send(str.c_str(), str.length());
-	//	
-	//	str.resize(1000);
-	//	auto len = sock.recv(&str.front(), 1000);
-	//	str.resize(len);
+	//	for (int i = 0; i < 10; i++)
+	//	{
+	//		cs477::net::socket sock;
+	//		sock.connect(cs477::net::resolve_address("localhost", 8080));
+	//		std::string str =
+	//			"GET /test HTTP/1.1\r\n"
+	//			"\r\n";
+	//		sock.send(str.c_str(), str.length());
 
-	//	printf("%s\n", str.c_str());
+	//		str.resize(1000);
+	//		auto len = sock.recv(&str.front(), 1000);
+	//		str.resize(len);
+
+	//		printf("%s\n", str.c_str());
+	//	}
 	//});
 
 	//single_thread::run(db);
@@ -72,8 +76,11 @@ cs477::net::http_response make_response(int status, const std::string &json)
 
 	if (status == 200)
 	{
-		rsp.body = json;
-		rsp.headers.emplace_back("Content-Type", "application/json");
+		if (json.length())
+		{
+			rsp.body = json;
+			rsp.headers.emplace_back("Content-Type", "application/json");
+		}
 	}
 
 	return rsp;

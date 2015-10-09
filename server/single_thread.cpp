@@ -24,25 +24,25 @@ namespace single_thread
 				std::string result;
 
 				// Dispatch request to database
-				if (request.method == "GET")
-				{
-					auto stmt = make_query(*db, request);
-					result = stmt.execute_query();
-				}
-				else if (request.method == "POST")
-				{
-					auto stmt = make_insert(*db, request);
-					stmt.execute();
-				}
-				else if (request.method == "DELETE")
-				{
-					auto stmt = make_delete(*db, request);
-					stmt.execute();
-				}
-				else
-				{
-					status = 404;
-				}
+				//if (request.method == "GET")
+				//{
+				//	auto stmt = make_query(*db, request);
+				//	result = stmt.execute_query();
+				//}
+				//else if (request.method == "POST")
+				//{
+				//	auto stmt = make_insert(*db, request);
+				//	stmt.execute();
+				//}
+				//else if (request.method == "DELETE")
+				//{
+				//	auto stmt = make_delete(*db, request);
+				//	stmt.execute();
+				//}
+				//else
+				//{
+				//	status = 404;
+				//}
 
 				// Write the response
 				auto rsp = make_response(status, result);
