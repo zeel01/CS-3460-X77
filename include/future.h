@@ -477,8 +477,22 @@ namespace cs477
 			return *this;
 		}
 
-		promise(const promise &&) = delete;
-		promise &operator =(const promise &) = delete;
+		promise(const promise &p)
+			: state(p.state)
+		{
+			if (state) state->addref();
+		}
+
+		promise &operator =(const promise &p)
+		{
+			if (state != p.state)
+			{
+				if (state) state->release();
+				state = p.state;
+				if (state) state->addref();
+			}
+			return *this;
+		}
 
 	public:
 		void set(T value)
@@ -537,8 +551,22 @@ namespace cs477
 			return *this;
 		}
 
-		promise(const promise &&) = delete;
-		promise &operator =(const promise &) = delete;
+		promise(const promise &p)
+			: state(p.state)
+		{
+			if (state) state->addref();
+		}
+
+		promise &operator =(const promise &p)
+		{
+			if (state != p.state)
+			{
+				if (state) state->release();
+				state = p.state;
+				if (state) state->addref();
+			}
+			return *this;
+		}
 
 	public:
 		void set()
@@ -629,14 +657,67 @@ namespace cs477
 
 	}
 
-	inline future<void> do_while(std::function<future<bool>()> body) 
+	//inline future<void> do_while(std::function<future<bool>()> body) 
+	//{
+	//	return queue_work([=]
+	//	{
+	//		while (body().get())
+	//		{
+	//		}
+	//	});
+	//}
+
+
+
+	namespace details
 	{
-		return queue_work([=]
+
+		template <class Body>
+		void task_loop(promise<void> p, Body body)
 		{
-			while (body().get())
+			body().then([=](auto f) mutable
 			{
+				try
+				{
+					if (f.get())
+					{
+						task_loop(p, body);
+					}
+					else
+					{
+						p.set();
+					}
+				}
+				catch (...)
+				{
+					p.set_exception(std::current_exception());
+				}
+				return 0;
+			});
+		}
+	}
+
+	template <class Body>
+	future<void> do_while(Body body)
+	{
+		promise<void> p;
+		auto f = p.get_future();
+
+		queue_work([=]() mutable
+		{
+			try
+			{
+				details::task_loop(p, body);
+			}
+			catch (...)
+			{
+				p.set_exception(std::current_exception());
 			}
 		});
+
+		return f;
 	}
+
+
 
 }

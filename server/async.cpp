@@ -9,9 +9,7 @@ namespace async
 	void socket_handler(cs477::net::socket sock)
 	{
 		// Read an http request
-		auto f = cs477::net::read_http_request_async(sock);
-
-		f.then([sock](auto f)
+		auto f = cs477::net::read_http_request_async(sock).then([sock](auto f)
 		{
 			auto rq = f.get();
 
@@ -48,19 +46,19 @@ namespace async
 	}
 
 
-	void run(std::shared_ptr<cs477::data::database> db)
+	void run(const sockaddr_in &addr, std::shared_ptr<cs477::data::database> db)
 	{
 		auto host = std::make_shared<cs477::net::acceptor>();
-		auto addr = cs477::net::resolve_address("192.168.1.75", 8080);
-		//auto addr = cs477::net::resolve_address("localhost", 8080);
 		host->listen(addr);
 
-		host->accept_async(socket_handler);
-
-		for (;;)
+		for (int i = 0; i < 32; i++)
 		{
-
+			host->accept_async(socket_handler);
 		}
 
+		// Just wait forever.
+		cs477::promise<void> p;
+		auto f = p.get_future();
+		f.wait();
 	}
 }

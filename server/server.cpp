@@ -10,9 +10,8 @@ int main()
 {
 	cs477::net::initialize();
 
-	auto db = cs477::data::open("c:\\dev\\2015\\my.db");
+	auto db = cs477::data::open("c:\\test\\my.db");
 	db->execute("create table if not exists data (key text, value text)");
-
 
 	//cs477::queue_work([]
 	//{
@@ -33,9 +32,14 @@ int main()
 	//	}
 	//});
 
-	//single_thread::run(db);
+
+	//auto addr = cs477::net::resolve_address("192.168.1.75", 8080);
+	//auto addr = cs477::net::resolve_address("localhost", 8080);
+	auto addr = cs477::net::resolve_address("10.0.255.32", 8080);
+
+	//single_thread::run(db, addr);
 	//multi_thread::run2(db);
-	async::run(db);
+	async::run(addr, db);
 
 	cs477::net::finalize();
 	return 0;

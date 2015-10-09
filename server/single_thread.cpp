@@ -5,10 +5,9 @@
 
 namespace single_thread
 {
-	void run(std::shared_ptr<cs477::data::database> db)
+	void run(const sockaddr_in &addr, std::shared_ptr<cs477::data::database> db)
 	{
 		auto host = std::make_shared<cs477::net::acceptor>();
-		auto addr = cs477::net::resolve_address("192.168.1.75", 8080);
 		host->listen(addr);
 
 		for (;;)
