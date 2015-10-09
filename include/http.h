@@ -34,6 +34,8 @@ namespace cs477
 		void write_http_response(socket &sock, const http_response &rsp);
 		future<void> write_http_response_async(socket sock, const http_response &rsp);
 
+
+		const std::error_category &http_category();
 	}
 
 }

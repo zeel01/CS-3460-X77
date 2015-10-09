@@ -15,6 +15,7 @@ namespace cs477
 	namespace data
 	{
 
+
 		class database;
 		class statement;
 		class table;

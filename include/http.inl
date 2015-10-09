@@ -1,5 +1,6 @@
 
 #include "../http_parser/http_parser.h"
+#include "http.h"
 #pragma comment(lib, "http_parser.lib")
 
 
@@ -103,7 +104,7 @@ namespace cs477
 				auto parsed = http_parser_execute(&state, &state, str.c_str(), len);
 				if (parsed != len)
 				{
-					throw std::exception();
+					throw std::system_error(state.http_errno, http_category());
 				}
 
 				if (state.state == http_request_parse_state::done)
@@ -138,7 +139,7 @@ namespace cs477
 					auto parsed = http_parser_execute(state.get(), state.get(), str.c_str(), str.length());
 					if (parsed != str.length())
 					{
-						throw std::exception();
+						throw std::system_error(state->http_errno, http_category());
 					}
 
 					return state->state != http_request_parse_state::done;
@@ -206,6 +207,30 @@ namespace cs477
 
 			return sock.send_async(text.c_str(), text.length());
 		}
+
+
+
+		class _http_error_category : public std::error_category
+		{
+			virtual const char *name() const _NOEXCEPT
+			{
+				return "http";
+			}
+
+			virtual std::string message(int code) const
+			{
+				return http_errno_description(static_cast<http_errno>(code));
+			}
+		};
+
+
+		inline const std::error_category & http_category()
+		{
+			static _http_error_category *cat = new _http_error_category;
+			return *cat;
+		}
+
+
 
 
 	}

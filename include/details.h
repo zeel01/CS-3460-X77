@@ -110,7 +110,7 @@ namespace cs477
 			if (!handle)
 			{
 				auto error = GetLastError();
-				throw std::system_error(error, std::generic_category());
+				throw std::system_error(error, std::system_category());
 			}
 
 			return handle;
@@ -121,7 +121,7 @@ namespace cs477
 			auto error = pthread_create(&tid, nullptr, thread_start_routine, param);
 			if (error)
 			{
-				throw std::system_error(error, std::generic_category());
+				throw std::system_error(error, std::system_category());
 			}
 			return tid;
 

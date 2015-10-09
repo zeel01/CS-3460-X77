@@ -149,12 +149,13 @@ namespace cs477
 
 				if (!fn_accept(handle, op->sock->handle, op->buf, 0, (sizeof(sockaddr_in) + 16), (sizeof(sockaddr_in) + 16), nullptr, &op->ol.ol))
 				{
-					if (GetLastError() != ERROR_IO_PENDING)
+					auto err = GetLastError();
+					if (err != ERROR_IO_PENDING)
 					{
 						release();
 						CancelThreadpoolIo(io);
 						delete op;
-						throw std::exception();
+						throw std::system_error(err, std::system_category());
 					}
 				}
 			}
@@ -175,12 +176,13 @@ namespace cs477
 				auto result = WSASend(handle, &wsabuf, 1, nullptr, 0, &op->ol.ol, nullptr);
 				if (result == SOCKET_ERROR)
 				{
-					if (GetLastError() != ERROR_IO_PENDING)
+					auto err = GetLastError();
+					if (err != ERROR_IO_PENDING)
 					{
 						release();
 						CancelThreadpoolIo(io);
 						delete op;
-						throw std::exception();
+						throw std::system_error(err, std::system_category());
 					}
 				}
 
@@ -203,12 +205,13 @@ namespace cs477
 				auto result = WSARecv(handle, &wsabuf, 1, nullptr, &flags, &op->ol.ol, nullptr);
 				if (result == SOCKET_ERROR)
 				{
-					if (GetLastError() != ERROR_IO_PENDING)
+					auto err = GetLastError();
+					if (err != ERROR_IO_PENDING)
 					{
 						release();
 						CancelThreadpoolIo(io);
 						delete op;
-						throw std::exception();
+						throw std::system_error(err, std::system_category());
 					}
 				}
 

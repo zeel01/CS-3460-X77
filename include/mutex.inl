@@ -111,13 +111,13 @@ namespace cs477
 #ifdef _WIN32
 		if (!SleepConditionVariableCS(&cv, &mtx.cs, INFINITE))
 		{
-			throw std::exception();
+			throw std::system_error(GetLastError(), std::system_category());
 		}
 #else
 		auto err = pthread_cond_wait(&cv, mtx.mtx);
 		if (err)
 		{
-			throw std::exception();
+			throw std::system_error(err, std::system_category());
 		}
 #endif
 	}
@@ -135,7 +135,7 @@ namespace cs477
 			}
 			else
 			{
-				throw std::exception();
+				throw std::system_error(err, std::system_category());
 			}
 		}
 		return true;
@@ -156,7 +156,7 @@ namespace cs477
 		}
 		else
 		{
-			throw std::exception();
+			throw std::system_error(err, std::system_category());
 		}
 #endif
 	}

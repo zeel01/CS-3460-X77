@@ -43,7 +43,7 @@ namespace cs477
 			int err = getaddrinfo(hostname.c_str(), service, &hint, &info);
 			if (err == SOCKET_ERROR)
 			{
-				throw std::exception();
+				throw std::system_error(err, std::system_category());
 			}
 
 			auto addr = *(sockaddr_in *)info->ai_addr;
@@ -112,7 +112,7 @@ namespace cs477
 			auto err = ::connect(sock->handle, (sockaddr *)&addr, sizeof(sockaddr_in));
 			if (err == SOCKET_ERROR)
 			{
-				throw std::exception();
+				throw std::system_error(GetLastError(), std::system_category());
 			}
 		}
 
@@ -120,7 +120,7 @@ namespace cs477
 		{
 			if (!sock) 
 			{
-				throw std::exception();
+				throw std::system_error(WSAENOTSOCK, std::system_category());
 			}
 
 			auto ptr = buf;
@@ -132,7 +132,7 @@ namespace cs477
 				auto sent = ::send(sock->handle, ptr, bytes, 0);
 				if (sent == SOCKET_ERROR || sent == 0)
 				{
-					throw std::exception();
+					throw std::system_error(GetLastError(), std::system_category());
 				}
 				ptr += sent;
 			}
@@ -148,7 +148,7 @@ namespace cs477
 			auto recvd = ::recv(sock->handle, buf, static_cast<int>(len), 0);
 			if (recvd == SOCKET_ERROR || recvd == 0)
 			{
-				throw std::exception();
+				throw std::system_error(GetLastError(), std::system_category());
 			}
 
 			return static_cast<size_t>(recvd);
@@ -158,7 +158,7 @@ namespace cs477
 		{
 			if (!sock)
 			{
-				throw std::exception();
+				throw std::system_error(WSAENOTSOCK, std::system_category());
 			}
 
 			return sock->send(buf, len);
@@ -168,7 +168,7 @@ namespace cs477
 		{
 			if (!sock)
 			{
-				throw std::exception();
+				throw std::system_error(WSAENOTSOCK, std::system_category());
 			}
 
 			return sock->recv(65536);
@@ -195,13 +195,13 @@ namespace cs477
 			auto err = ::bind(sock->handle, (sockaddr *)&addr, sizeof(sockaddr_in));
 			if (err == SOCKET_ERROR)
 			{
-				throw std::exception();
+				throw std::system_error(GetLastError(), std::system_category());
 			}
 
 			err = ::listen(sock->handle, SOMAXCONN);
 			if (err == SOCKET_ERROR)
 			{
-				throw std::exception();
+				throw std::system_error(GetLastError(), std::system_category());
 			}
 		}
 
@@ -210,7 +210,7 @@ namespace cs477
 			auto s = ::accept(sock->handle, nullptr, 0);
 			if (s == INVALID_SOCKET)
 			{
-				throw std::exception();
+				throw std::system_error(GetLastError(), std::system_category());
 			}
 
 			socket sock;

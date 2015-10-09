@@ -28,6 +28,7 @@
 #include <list>
 #include <chrono>
 #include <atomic>
+#include <functional>
 #include <cassert>
 
 
