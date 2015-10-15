@@ -133,7 +133,7 @@ namespace cs477
 
 			return do_while([state, sock] () mutable
 			{
-				return sock.recv_async().then([state] (future<std::string> f) mutable
+				return sock.recv_async().then([state] (auto f) mutable
 				{
 					auto str = f.get();
 					auto parsed = http_parser_execute(state.get(), state.get(), str.c_str(), str.length());

@@ -13,171 +13,75 @@ namespace cs477
 
 	template <typename T, typename Iterator> future<std::vector<T>> when_all(Iterator first, Iterator last);
 
+	enum class future_state
+	{
+		not_ready = 0,
+		has_value,
+		has_error,
+	};
 
 	namespace details
 	{
+
+		class abstract_task;
 
 
 		class basic_shared_state
 		{
 		public:
-			std::atomic<int> ref;
+			basic_shared_state();
+			virtual ~basic_shared_state();
 
-			enum
-			{
-				not_ready = 0,
-				has_value,
-				has_error,
-			} state;
+			void set_exception(std::exception_ptr ptr);
+			void wait();
+
+		public:
+			future_state state;
 
 			std::exception_ptr ex;
 
 			mutex mtx;
 			condition_variable cv;
 
-			basic_shared_state()
-				: ref(1), state(not_ready)
-			{
-			}
-
-			virtual ~basic_shared_state()
-			{
-				if (ex)
-				{
-					try
-					{
-						std::rethrow_exception(ex);
-					}
-					catch (std::exception &ex)
-					{
-						printf("Warning: uncaught exception! %s\n", ex.what());
-					}
-					catch (...)
-					{
-						printf("Warning: uncaught exception!\n");
-					}
-				}
-			}
-
-			void addref()
-			{
-				++ref;
-			}
-
-			void release()
-			{
-				if (ref == 1)
-				{
-					delete this;
-					return;
-				}
-				--ref;
-			}
-
-			void set_exception(std::exception_ptr ptr)
-			{
-				lock_guard<> guard(mtx);
-				if (state != not_ready)
-				{
-					// TODO: Throw
-				}
-
-				state = has_error;
-				ex = std::move(ptr);
-				cv.notify_all();
-			}
-
-			void set()
-			{
-				lock_guard<> guard(mtx);
-				if (state != not_ready)
-				{
-					// TODO: Throw
-				}
-				state = has_value;
-				cv.notify_all();
-			}
-
-			void wait()
-			{
-				lock_guard<> guard(mtx);
-				while (state == not_ready)
-				{
-					cv.wait(mtx);
-				}
-
-				if (ex)
-				{
-					auto ptr = std::move(ex);
-					std::rethrow_exception(ptr);
-				}
-			}
-
-			virtual void execute()
-			{
-				// Non invokable!
-			}
+			std::unique_ptr<abstract_task> next;
 		};
 
 		template <typename T>
-		class basic_shared_state_with_value : public basic_shared_state
+		class shared_state : public basic_shared_state
 		{
 		public:
-			T value;
+			void set(T val);
+			T get();
 
 		public:
-			basic_shared_state_with_value()
-			{
-			}
+			T value;
+		};
 
-			virtual ~basic_shared_state_with_value()
-			{
-			}
-
-			void set(T &&val)
-			{
-				lock_guard<> guard(mtx);
-				if (state != not_ready)
-				{
-					// TODO: Throw
-				}
-				state = has_value;
-				value = std::move(val);
-				cv.notify_all();
-			}
-
-			T get()
-			{
-				lock_guard<> guard(mtx);
-				while (state == not_ready)
-				{
-					cv.wait(mtx);
-				}
-
-				if (ex)
-				{
-					auto ptr = std::move(ex);
-					std::rethrow_exception(ptr);
-				}
-
-				return std::move(value);
-			}
-
-
+		template <>
+		class shared_state<void> : public basic_shared_state
+		{
+		public:
+			void set();
+			void get();
 		};
 
 
-
-		template <typename T, typename Fn>
-		class shared_state : public basic_shared_state_with_value<T>
+		class abstract_task
 		{
 		public:
-			shared_state(Fn fn)
-				: fn(std::move(fn))
+			virtual ~abstract_task()
 			{
 			}
 
-			virtual ~shared_state()
+			virtual void execute() = 0;
+		};
+
+		template <typename R, typename Fn>
+		class task : public abstract_task
+		{
+		public:
+			task(Fn fn)
+				: fn(std::move(fn))
 			{
 			}
 
@@ -185,28 +89,25 @@ namespace cs477
 			{
 				try
 				{
-					auto val = fn();
-					set(std::move(val));
+					auto r = fn();
+					p.set(std::move(r));
 				}
 				catch (...)
 				{
-					set_exception(std::current_exception());
+					p.set_exception(std::current_exception());
 				}
 			}
 
 			Fn fn;
+			promise<R> p;
 		};
 
 		template <typename Fn>
-		class shared_state<void, Fn> : public basic_shared_state
+		class task<void, Fn> : public abstract_task
 		{
 		public:
-			shared_state(Fn fn)
+			task(Fn fn)
 				: fn(std::move(fn))
-			{
-			}
-
-			virtual ~shared_state()
 			{
 			}
 
@@ -215,40 +116,60 @@ namespace cs477
 				try
 				{
 					fn();
-					set();
+					p.set();
 				}
 				catch (...)
 				{
-					set_exception(std::current_exception());
+					p.set_exception(std::current_exception());
 				}
 			}
 
 			Fn fn;
+			promise<void> p;
 		};
 
-
-
-
-		template <typename T> future<T> make_future(basic_shared_state_with_value<T> *state);
-		future<void> make_future(basic_shared_state *state);
-
-
-		inline void queue_work(basic_shared_state *state)
+		template <typename R, typename Fn> task<R, Fn> *make_task(Fn fn)
 		{
-			state->addref();
+			return new task<R, Fn>(std::move(fn));
+		}
 
-#ifdef _WIN32
-			auto work = CreateThreadpoolWork([](PTP_CALLBACK_INSTANCE, PVOID context, PTP_WORK work)
+		template <typename R, typename Fn> void queue_work(task<R, Fn> *task)
+		{
+			auto work = CreateThreadpoolWork([](PTP_CALLBACK_INSTANCE, PVOID Context, PTP_WORK work)
 			{
-				auto state = static_cast<basic_shared_state *>(context);
-				state->execute();
-				state->release();
-			}, state, nullptr);
+				auto task = (details::task<R, Fn> *)Context;
+				task->execute();
+				delete task;
+				CloseThreadpoolWork(work);
+			}, task, nullptr);
 			SubmitThreadpoolWork(work);
+		}
 
-#else
-			static_assert(false, "Get a threadpool");
-#endif
+
+		template <typename T, typename Fn>
+		auto then(std::shared_ptr<shared_state<T>> state, Fn fn)
+		{
+			using R = decltype(fn(future<T>{state}));
+			future<R> f;
+
+			lock_guard<> lock(state->mtx);
+
+			auto task = make_task<R>([state, fn = std::move(fn)]() mutable
+			{
+				return fn(future<T>{ state });
+			});
+			f = task->p.get_future();
+
+			if (state->state == future_state::not_ready)
+			{
+				state->next = std::unique_ptr<details::abstract_task>(task);
+			}
+			else
+			{
+				queue_work(task);
+			}
+
+			return f;
 		}
 
 
@@ -263,16 +184,16 @@ namespace cs477
 	{
 	public:
 		future()
-			: state(nullptr)
 		{
 		}
 
 		virtual ~future()
 		{
-			if (state)
-			{
-				state->release();
-			}
+		}
+
+		future(std::shared_ptr<details::shared_state<T>> state)
+			: state(state)
+		{
 		}
 
 		future(future &&f)
@@ -317,27 +238,12 @@ namespace cs477
 				// TODO: Throw
 			}
 
-			lock_guard<> lock(state->mtx);
-			if (state->state == details::basic_shared_state::not_ready) 
-			{
-				// Just queue a thread to wait on the cv.  
-				return queue_work([f = std::move(*this), fn = std::move(fn)] () mutable
-				{
-					f.wait();
-					return fn(std::move(f));
-				});
-			}
-			else
-			{
-				return make_ready_future(fn(std::move(*this)));
-			}
+			return details::then(state, std::move(fn));
 		}
 
 	public:
-		details::basic_shared_state_with_value<T> *state;
+		std::shared_ptr<details::shared_state<T>> state;
 
-		template <typename T> friend future<T> details::make_future(details::basic_shared_state_with_value<T> *);
-		friend class promise<T>;
 	};
 
 
@@ -347,16 +253,16 @@ namespace cs477
 	{
 	public:
 		future()
-			: state(nullptr)
 		{
 		}
 
 		~future()
 		{
-			if (state)
-			{
-				state->release();
-			}
+		}
+
+		future(std::shared_ptr<details::shared_state<void>> state)
+			: state(state)
+		{
 		}
 
 		future(future &&f)
@@ -375,7 +281,7 @@ namespace cs477
 		future &operator =(const future &f) = delete;
 
 	public:
-		void wait() 
+		void wait()
 		{
 			if (!state)
 			{
@@ -401,49 +307,37 @@ namespace cs477
 				// TODO: Throw
 			}
 
-			lock_guard<> lock(state->mtx);
-
-			if (state->state == details::basic_shared_state::not_ready)
-			{
-				// Just queue a thread to wait on the cv.  
-				// not the bes
-				return queue_work([f = std::move(*this), fn = std::move(fn)]() mutable
-				{
-					f.wait();
-					return fn(std::move(f));
-				});
-			}
-			else
-			{
-				return make_ready_future(fn(std::move(*this)));
-			}
+			return details::then(state, std::move(fn));
 		}
 
 	private:
-		details::basic_shared_state *state;
-
-		friend future<void> details::make_future(basic_shared_state *);
-		friend class promise<void>;
+		std::shared_ptr<details::shared_state<void>> state;
 	};
 
 
 	template <typename T> future<T> make_ready_future(T value)
 	{
-		auto state = new details::basic_shared_state_with_value<T>();
-		auto f = details::make_future(state);
+		auto state = std::make_shared<details::shared_state<T>>();
 		state->set(std::move(value));
-		state->release();
-		return f;
+		return state;
 	}
-	
+
 	inline future<void> make_ready_future()
 	{
-		auto state = new details::basic_shared_state();
-		auto f = details::make_future(state);
+		auto state = std::make_shared<details::shared_state<void>>();
 		state->set();
-		state->release();
+		return state;
+	}
+
+	template <typename Fn> future<std::result_of_t<Fn()>> queue_work(Fn fn)
+	{
+		using R = typename std::result_of_t<Fn()>;
+		auto task = new details::task<R, Fn>(std::move(fn));
+		auto f = task->p.get_future();
+		details::queue_work(task);
 		return f;
 	}
+
 
 
 
@@ -453,16 +347,12 @@ namespace cs477
 	{
 	public:
 		promise()
-			: state(new details::basic_shared_state_with_value<T>())
+			: state(std::make_shared<details::shared_state<T>>())
 		{
 		}
 
 		virtual ~promise()
 		{
-			if (state)
-			{
-				state->release();
-			}
 		}
 
 		promise(promise &&p)
@@ -480,17 +370,11 @@ namespace cs477
 		promise(const promise &p)
 			: state(p.state)
 		{
-			if (state) state->addref();
 		}
 
 		promise &operator =(const promise &p)
 		{
-			if (state != p.state)
-			{
-				if (state) state->release();
-				state = p.state;
-				if (state) state->addref();
-			}
+			state = p.state;
 			return *this;
 		}
 
@@ -515,11 +399,11 @@ namespace cs477
 
 		future<T> get_future()
 		{
-			return details::make_future(state);
+			return future<T>{state};
 		}
 
 	private:
-		details::basic_shared_state_with_value<T> *state;
+		std::shared_ptr<details::shared_state<T>> state;
 	};
 
 	template <>
@@ -527,16 +411,12 @@ namespace cs477
 	{
 	public:
 		promise()
-			: state(new details::basic_shared_state())
+			: state(std::make_shared<details::shared_state<void>>())
 		{
 		}
 
 		virtual ~promise()
 		{
-			if (state)
-			{
-				state->release();
-			}
 		}
 
 		promise(promise &&p)
@@ -554,17 +434,11 @@ namespace cs477
 		promise(const promise &p)
 			: state(p.state)
 		{
-			if (state) state->addref();
 		}
 
 		promise &operator =(const promise &p)
 		{
-			if (state != p.state)
-			{
-				if (state) state->release();
-				state = p.state;
-				if (state) state->addref();
-			}
+			state = p.state;
 			return *this;
 		}
 
@@ -589,11 +463,11 @@ namespace cs477
 
 		future<void> get_future()
 		{
-			return details::make_future(state);
+			return future<void>{state};
 		}
 
 	private:
-		details::basic_shared_state *state;
+		std::shared_ptr<details::shared_state<void>> state;
 	};
 
 
@@ -634,28 +508,6 @@ namespace cs477
 	}
 
 
-
-
-	namespace details
-	{
-
-		template <typename T> future<T> make_future(basic_shared_state_with_value<T> *state)
-		{
-			future<T> f;
-			f.state = state;
-			f.state->addref();
-			return f;
-		}
-
-		inline future<void> make_future(basic_shared_state *state)
-		{
-			future<void> f;
-			f.state = state;
-			f.state->addref();
-			return f;
-		}
-
-	}
 
 	//inline future<void> do_while(std::function<future<bool>()> body) 
 	//{

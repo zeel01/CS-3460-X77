@@ -8,6 +8,7 @@ namespace async
 {
 	void socket_handler(cs477::net::socket sock)
 	{
+
 		// Read an http request
 		auto f = cs477::net::read_http_request_async(sock).then([sock](auto f)
 		{
