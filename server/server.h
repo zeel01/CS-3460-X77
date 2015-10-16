@@ -8,6 +8,7 @@
 #include "../include/data.h"
 #include "../include/net.h"
 #include "../include/http.h"
+#include "../include/file.h"
 
 
 cs477::data::statement make_query(cs477::data::database &db, const cs477::net::http_request &request);
