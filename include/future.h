@@ -154,10 +154,13 @@ namespace cs477
 
 			lock_guard<> lock(state->mtx);
 
-			auto task = make_task<R>([state, fn = std::move(fn)]() mutable
+			auto tfn = [state, fn = std::move(fn)]() mutable
 			{
 				return fn(future<T>{ state });
-			});
+			};
+			using Tfn = decltype(tfn);
+
+			auto task = make_task<R, Tfn>(std::move(tfn));
 			f = task->p.get_future();
 
 			if (state->state == future_state::not_ready)
@@ -166,7 +169,7 @@ namespace cs477
 			}
 			else
 			{
-				queue_work(task);
+				queue_work<R, Tfn>(task);
 			}
 
 			return f;
@@ -474,7 +477,7 @@ namespace cs477
 
 
 
-	template <typename Iterator> auto std_when_all(Iterator first, Iterator last)
+	template <typename Iterator> auto when_all(Iterator first, Iterator last)
 	{
 		using R = decltype(first->get());
 		future<std::vector<future<R>>> wait_on_all = make_ready_future<std::vector<future<R>>>({});
@@ -491,37 +494,6 @@ namespace cs477
 		return wait_on_all;
 	}
 
-	template <typename Iterator> auto when_all(Iterator first, Iterator last)
-	{
-		future<std::vector<T>> f;
-
-		//return std_when_all<T, Iterator>(first, last).then([](auto f)
-		//{
-		//	auto v = f.get();
-
-		//	std::vector<T> list;
-		//	for (auto &&i : v)
-		//	{
-		//		list.push_back(i.get());
-		//	}
-
-		//	return list;
-		//});
-
-		return f;
-	}
-
-
-
-	//inline future<void> do_while(std::function<future<bool>()> body) 
-	//{
-	//	return queue_work([=]
-	//	{
-	//		while (body().get())
-	//		{
-	//		}
-	//	});
-	//}
 
 
 
