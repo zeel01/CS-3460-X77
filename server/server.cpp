@@ -9,11 +9,16 @@ int main()
 {
 	cs477::net::initialize();
 
-	auto f = cs477::read_file_async("C:\\Dev\\2015\\CS-3460-X77\\index.json");
-	auto str = f.get();
+	std::vector<cs477::future<int>> futures;
+	auto f = cs477::read_file_async("C:\\Dev\\2015\\CS-3460-X77\\index.json").then([] (auto f)
+	{
+		cs477::write_file_async("C:\\Dev\\2015\\test.json", f.get());
+		return 0;
+	});
+	futures.push_back(std::move(f));
 
-	auto f2= cs477::write_file_async("C:\\Dev\\2015\\test.json", str);
-	f2.wait();
+	auto ff = cs477::std_when_all(futures.begin(), futures.end());
+	auto v = ff.get();
 
 	auto db = cs477::data::open("c:\\dev\\2015\\my.db");
 	db->execute("create table if not exists data (key text, value text)");

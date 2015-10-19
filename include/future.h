@@ -474,35 +474,39 @@ namespace cs477
 
 
 
-	template <typename T, typename Iterator> future<std::vector<T>> when_all(Iterator first, Iterator last)
+	template <typename Iterator> auto std_when_all(Iterator first, Iterator last)
 	{
-		promise<std::vector<T>> p;
-		auto f = p.get_future();
-
-		std::vector<T> list;
-		std::exception_ptr ex;
-		while (first != last)
+		using R = decltype(first->get());
+		future<std::vector<future<R>>> wait_on_all = make_ready_future<std::vector<future<R>>>({});
+		for (auto it = first; it != last; ++it)
 		{
-			try
-			{
-				list.push_back(first->get());
-			}
-			catch (...)
-			{
-				ex = std::current_exception();
-			}
+			future<R> f = std::move(*it);
+			wait_on_all = f.then([w = std::move(wait_on_all)](auto f) mutable {
+				auto vec = w.get();
+				vec.emplace_back(std::move(f));
+				return vec;
+			});
 
-			first++;
 		}
+		return wait_on_all;
+	}
 
-		if (ex)
-		{
-			p.set_exception(ex);
-		}
-		else
-		{
-			p.set(std::move(list));
-		}
+	template <typename Iterator> auto when_all(Iterator first, Iterator last)
+	{
+		future<std::vector<T>> f;
+
+		//return std_when_all<T, Iterator>(first, last).then([](auto f)
+		//{
+		//	auto v = f.get();
+
+		//	std::vector<T> list;
+		//	for (auto &&i : v)
+		//	{
+		//		list.push_back(i.get());
+		//	}
+
+		//	return list;
+		//});
 
 		return f;
 	}
