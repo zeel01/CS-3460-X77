@@ -28,4 +28,9 @@ Homework Assignments
 	b. Performance: ?pts  
 	c. Style: ?pts  
 
+3.	Web server
+	Write a web server to server static files.  The networking and file I/O be entirely asynchronous.
+	a. Completeness: ?pt  
+	b. Performance: ?pts  
+	c. Style: ?pts  
 	

@@ -54,14 +54,14 @@ namespace cs477
 		}
 
 		// Wait for all the futures to finish.
-		auto f = when_all<size_t>(futures.begin(), futures.end());
+		auto f = when_all(futures.begin(), futures.end());
 		auto counts = f.get();
 		
 		// Compute the sum of the local values.
 		size_t ret = 0;
-		for (auto i : counts)
+		for (auto &&i : counts)
 		{
-			ret += i;
+			ret += i.get();
 		}
 
 		return ret;
