@@ -1,0 +1,117 @@
+Exam 1
+======
+
+NOTE: All of the code listed here is pseudo-code.  
+
+
+0.	What is your github Id?
+
+
+
+1.	The following algorithms compute a sum of all the elements in a 
+	vector of doubles.  
+
+double sum(const vector_view<double> &v)  
+{  
+  double s = 0.0;
+  for (auto d : v)
+  {
+    s += d;
+  }  
+  return s;
+}  
+
+future<double> parallel_sum(const vector_view<double> &v)
+{
+  if (v.size() < N)
+  {
+    return make_ready_future<double>(sum(v));
+  }
+  else
+  {
+    auto mid = v.begin() + v.size() / 2;
+	future<double> futures[2] = 
+	{
+		async([v = vector_view<double>(v.begin(), mid)]
+		{
+		  return parallel_sum(v);
+		},
+		async([v = vector_view<double>(mid, v.end())]
+		{
+		  return parallel_sum(v);
+		}		
+	};
+	return when_all(futures).then([] (future<vector<double>> f)
+	{
+	  auto v = f.get();
+      double s = 0.0;
+      for (auto d : v)
+      {
+        s += d;
+      }  
+      return s;
+	};
+  }
+}
+
+	a.	Design an experiment to determine an appropriate value for N.
+	
+	b.  How do you expect the value of N to change as the number of cores 
+		increases?
+
+	c.  parallel_sum returns a future<double>.  Can you call the result's 
+		.then method?  Why or why not?
+	
+	
+	
+	
+2.	A mutex can be used to serialize access to a resource (i.e. only one 
+	thread can access the resource at a time).  
+	You can achieve a similar effect with a concurrent queue.
+	
+	a.	Provide an example of when and why it might be appropriate to 
+		use a mutex.
+	
+	b.	Provide an example of when and why it might be appropriate to 
+		use a concurrent queue.
+	 
+
+
+	 
+3.	The following graph represents what happens when you visit www.google.com.
+	Each row is an HTTP request where '>' marks the begining of the request
+	and '<' marks the end.  The row is the HTML document; all the others are 
+	Javascript, CSS or images.
+
+	0                        500ms                    1000ms                   
+    |_________________________|_________________________|______________________
+	
+1   >---------------------------< 
+2      >---------------------------<  
+3      >-<
+4      >--<
+5      >------<
+6      >---------<
+7              >------------------------------------------------------<
+9                 >---------------------<
+10                                       >-----<
+11                                       >----------<
+12                                              >--<
+13                                              >-----<
+14                                                  >-<
+15                                                   >----<
+
+
+	a.	Each HTTP request requires a socket.  Assuming sockets can be re-used
+		between requests, how many sockets are represnted on this graph?
+	
+	b.  The DOM's onDOMContentLoaded event is signaled when all content is 
+		downloaded and processed (in this case, when row 7 finishes).  
+		Assumng that each HTTP request returns a future, when should 
+		the DOM signal the onDOMContentLoaded event?
+		
+	c.	Is it reasonable to assume that this browser uses futures 
+		to execute concurrent requests?  Or is it using another mechanism
+		altogether?
+		
+		
