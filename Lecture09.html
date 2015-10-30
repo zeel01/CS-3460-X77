@@ -101,7 +101,7 @@ int execve(
 				</section>				
 				
 				<section>
-				<h1>Sharing (POSIX)</h1>
+				<h2>Sharing (POSIX)</h2>
 				<pre><code>
 int shm_open(const char *name, int oflag, mode_t mode);
 void *mmap(
@@ -117,12 +117,12 @@ int close(int fd);
 				</section>		
 
 				<section>
-				<h1>Sharing (Windows)</h1>
+				<h2>Sharing (Windows)</h2>
 				<pre><code>
-HANDLE CreateFileMapping(...)
-LPVOID MapViewOfFile(...)
-BOOL UnmapViewOfFile(...)
-BOOL CloseHandle(...)
+HANDLE CreateFileMapping(...);
+LPVOID MapViewOfFile(...);
+BOOL UnmapViewOfFile(...);
+BOOL CloseHandle(...);
 				</pre></code>
 				</section>		
 				
@@ -130,8 +130,30 @@ BOOL CloseHandle(...)
 				<h1>Synchronization</h1>
 				</section>			
 				
+				<section>
+				<h1>Semaphores</h1>
+				</section>			
 	
+				<section>
+				<h1>POSIX</h1>
+				<pre><code>
+sem_t sem_open(const char *name, int oflag, mode_t mode, unsigned int value);
+int sem_wait(sem_t *sem);
+int sem_post(semt_t *sem);
+int sem_close(sem_t *sem);
+int sem_unlink(const char *name);
+				</pre></code>
+				</section>			
 				
+				<section>
+				<h1>Windows</h1>
+				<pre><code>
+HANDLE CreateSemaphore(LPSECURITY_ATTRIBUTES, LONG InitialCount, LONG MaxCount, LPCSTR Name);
+DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
+BOOL ReleaseSemaphore(HANDLE hSemaphore, LONG lReleaseCount, LPLONG lpPreviousCount);
+BOOL CloseHandle(HANDLE hObject);
+				</pre></code>
+				</section>			
 
 				
 				
