@@ -106,4 +106,36 @@ namespace cs477
 
 
 
+	class semaphore
+	{
+	public:
+		semaphore();
+
+		semaphore(const semaphore &) = delete;
+		semaphore &operator =(const semaphore &) = delete;
+
+		semaphore(semaphore &&) = delete;
+		semaphore &operator =(semaphore &&) = delete;
+
+		~semaphore();
+
+	public:
+		void init(const std::string &name, int count);
+		void init(const std::string &name);
+
+	public:
+		void wait();
+		void release();
+
+	public:
+		void lock() { wait(); }
+		void unlock() { release(); }
+
+	private:
+		HANDLE sem;
+	};
+
+
+
+
 }

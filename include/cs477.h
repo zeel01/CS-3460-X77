@@ -34,17 +34,21 @@
 
 
 #include "thread.h"
-#include "mutex.h"
+#include "lock.h"
 #include "future.h"
 #include "vector.h"
 #include "queue.h"
 #include "timer.h"
 
+#include "process.h"
+#include "shared_mem.h"
+
 #include "details.h"
 
 #include "thread.inl"
-#include "mutex.inl"
+#include "lock.inl"
 #include "future.inl"
 #include "vector.inl"
 #include "queue.inl"
+
 

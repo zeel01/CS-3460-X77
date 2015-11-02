@@ -30,9 +30,6 @@
     <ClInclude Include="..\include\future.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\mutex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\queue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -49,6 +46,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\process.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\shared_mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -76,9 +82,6 @@
     <None Include="..\include\future.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="..\include\mutex.inl">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="..\include\queue.inl">
       <Filter>Header Files</Filter>
     </None>
@@ -86,6 +89,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="..\include\data.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\include\lock.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

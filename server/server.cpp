@@ -11,6 +11,8 @@ int main()
 
 	using namespace cs477;
 	
+
+	return 0;
 	
 	auto db = cs477::data::open("c:\\dev\\2015\\my.db");
 	db->execute("create table if not exists data (key text, value text)");

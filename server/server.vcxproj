@@ -153,9 +153,11 @@
     <ClInclude Include="..\include\file.h" />
     <ClInclude Include="..\include\future.h" />
     <ClInclude Include="..\include\http.h" />
-    <ClInclude Include="..\include\mutex.h" />
+    <ClInclude Include="..\include\lock.h" />
     <ClInclude Include="..\include\net.h" />
+    <ClInclude Include="..\include\process.h" />
     <ClInclude Include="..\include\queue.h" />
+    <ClInclude Include="..\include\shared_mem.h" />
     <ClInclude Include="..\include\timer.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="stdafx.h" />
@@ -177,7 +179,7 @@
     <None Include="..\include\data.inl" />
     <None Include="..\include\future.inl" />
     <None Include="..\include\http.inl" />
-    <None Include="..\include\mutex.inl" />
+    <None Include="..\include\lock.inl" />
     <None Include="..\include\net.inl" />
     <None Include="..\include\queue.inl" />
   </ItemGroup>

@@ -164,7 +164,49 @@ namespace cs477
 
 
 
+	inline semaphore::semaphore()
+		: sem(nullptr)
+	{
+	}
 
+	inline semaphore::~semaphore()
+	{
+		if (sem)
+		{
+			CloseHandle(sem);
+		}
+	}
+
+	inline void semaphore::init(const std::string &name, int count)
+	{
+		sem = CreateSemaphoreA(nullptr, count, count, name.c_str());
+		if (!sem)
+		{
+			std::system_error(GetLastError(), std::system_category());
+		}
+	} 
+
+	inline void semaphore::init(const std::string &name)
+	{
+		sem = OpenSemaphoreA(SEMAPHORE_ALL_ACCESS, FALSE, name.c_str());
+		if (!sem)
+		{
+			std::system_error(GetLastError(), std::system_category());
+		}
+	}
+
+	inline void semaphore::wait()
+	{
+		if (WaitForSingleObject(sem, INFINITE) != WAIT_OBJECT_0)
+		{
+			std::system_error(GetLastError(), std::system_category());
+		}
+	}
+
+	inline void semaphore::release()
+	{
+		ReleaseSemaphore(sem, 1, nullptr);
+	}
 
 
 
