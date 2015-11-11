@@ -43,8 +43,11 @@ int main()
 	std::vector<int> v;
 	v.resize(1000000);
 
-	auto count = cs477::count(v.begin(), v.end(), 0);
+	auto count = cs477::parallel_count(v.begin(), v.end(), 0);
 	printf("%d\n", count);
+
+	auto sum = cs477::parallel_sum(v.begin(), v.end());
+	printf("%d\n", sum);
 
 	return 0;
 }
