@@ -120,7 +120,7 @@ namespace cs477
 		~semaphore();
 
 	public:
-		void init(const std::string &name, int count);
+		void init(const std::string &name, size_t value, size_t count);
 		void init(const std::string &name);
 
 	public:

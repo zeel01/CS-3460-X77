@@ -177,14 +177,14 @@ namespace cs477
 		}
 	}
 
-	inline void semaphore::init(const std::string &name, int count)
+	inline void semaphore::init(const std::string &name, size_t value, size_t count)
 	{
-		sem = CreateSemaphoreA(nullptr, count, count, name.c_str());
+		sem = CreateSemaphoreA(nullptr, (LONG)value, (LONG)count, name.c_str());
 		if (!sem)
 		{
 			std::system_error(GetLastError(), std::system_category());
 		}
-	} 
+	}
 
 	inline void semaphore::init(const std::string &name)
 	{

@@ -106,4 +106,138 @@ namespace cs477
 	}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+	template <typename T, size_t N>
+	class bounded_buffer
+	{
+	public:
+		bounded_buffer(const std::string name)
+		{
+
+			_buf = static_cast<char *>(shm_alloc(name, N * sizeof(T) + sizeof(uint32_t)));
+			_count = reinterpret_cast<uint32_t *>(_buf);
+			_vector = reinterpret_cast<T *>(_count + 1);
+	
+			_lock.init(name + "-lock", 1, 1);
+			_empty.init(name + "-empty", N, N);
+			_full.init(name + "-full", 0, N);
+		}
+
+		~bounded_buffer()
+		{
+			shm_free(_buf);
+		}
+
+		void write(const T &value)
+		{
+			_empty.wait();
+			_lock.wait();
+
+			_vector[*_count] = value;
+			(*_count)++;
+
+			_lock.release();
+			_full.release();
+		}
+
+		T read()
+		{
+			_full.wait();
+			_lock.wait();
+
+			auto t = _vector[*_count - 1];
+			(*_count)--;
+
+			_lock.release();
+			_empty.release();
+
+			return t;
+		}
+
+	private:
+		char *_buf;
+		uint32_t *_count;
+		T *_vector;
+
+		semaphore _empty;
+		semaphore _full;
+		semaphore _lock;
+	};
+
+
+	template <typename T, size_t N>
+	class bounded_queue
+	{
+	public:
+		bounded_queue(const std::string name)
+		{
+
+			_buf = static_cast<char *>(shm_alloc(name, N * sizeof(T) + 2 * sizeof(uint32_t)));
+			_write = reinterpret_cast<uint32_t *>(_buf);
+			_read = _write + 1;
+			_vector = reinterpret_cast<T *>(_read + 1);
+
+			_lock.init(name + "-lock", 1, 1);
+			_empty.init(name + "-empty", N, N);
+			_full.init(name + "-full", 0, N);
+		}
+
+		~bounded_queue()
+		{
+			shm_free(_buf);
+		}
+
+		void write(const T &value)
+		{
+			_empty.wait();
+			_lock.wait();
+
+			_vector[*_write] = value;
+			(*_write)++;
+			if (*_write == N) (*_write) = 0;
+
+			_lock.release();
+			_full.release();
+		}
+
+		T read()
+		{
+			_full.wait();
+			_lock.wait();
+
+			auto t = _vector[*_read];
+			(*_read)++;
+			if (*_read == N) (*_read) = 0;
+
+			_lock.release();
+			_empty.release();
+
+			return t;
+		}
+
+	private:
+		char *_buf;
+		uint32_t *_read;
+		uint32_t *_write;
+		T *_vector;
+
+		semaphore _empty;
+		semaphore _full;
+		semaphore _lock;
+
+
+	};
+
 }
