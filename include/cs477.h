@@ -38,6 +38,7 @@
 #include "future.h"
 #include "vector.h"
 #include "queue.h"
+#include "algorithm.h"
 #include "timer.h"
 
 #include "process.h"

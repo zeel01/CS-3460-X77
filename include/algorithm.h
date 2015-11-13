@@ -96,13 +96,13 @@ namespace cs477
 	}
 
 	template<class InputIt>
-	auto parallel_sum(InputIt first, InputIt last)
+	auto parallel_sum(InputIt first, InputIt last, ptrdiff_t threshold = parallel_threshold::sum)
 	{
-		if (std::distance(first, last) < parallel_threshold::sum)
-		{
-			// Let the STL handle the small cases
-			return sum(first, last);
-		}
+		//if (std::distance(first, last) < threshold)
+		//{
+		//	// Let the STL handle the small cases
+		//	return sum(first, last);
+		//}
 
 		using T = std::decay<decltype(*first)>::type;
 
@@ -137,6 +137,55 @@ namespace cs477
 		for (auto &&i : sums)
 		{
 			s += i.get();
+		}
+
+		return s;
+	}
+
+
+	template<class Executor, class InputIt>
+	auto parallel_sum(const Executor &ex, InputIt first, InputIt last)
+	{
+		using T = std::decay<decltype(*first)>::type;
+
+		// Parition the work into n chunks.  
+		// Each thread will work only on one chunk.
+		auto threads = ex.concurrency();
+		if (threads <= 1)
+		{
+			return sum(first, last);
+		}
+
+		std::vector<T> sums;
+		sums.resize(threads);
+
+		auto tb = ex.make_task_block();
+
+		auto count = last - first;
+		auto count_per_thread = count / threads;
+
+		auto chunk_first = first;
+		for (unsigned i = 0; i < threads; i++)
+		{
+			auto chunk_last = chunk_first + count_per_thread;
+
+			auto result = &sums[i];
+			tb.run([result, chunk_first, chunk_last]
+			{
+				*result = sum(chunk_first, chunk_last);
+			});
+
+			// Don't forget to move to the next chunk
+			chunk_first = chunk_last;
+		}
+
+		tb.wait();
+
+		// Compute the sum of the local values.
+		T s{};
+		for (auto &&i : sums)
+		{
+			s += i;
 		}
 
 		return s;

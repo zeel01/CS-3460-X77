@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Timings</title>
+
+		<meta name="author" content="Tyler Sutton">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<div class="slides">
+
+			
+<section>
+<h2>N = 2</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 28.3021</td></tr>
+<tr><td>Futures</td><td> 21517.3</td></tr>
+<tr><td>2 Threads</td><td> 8142.7</td></tr>
+<tr><td>4 Threads</td><td> 8892.81</td></tr>
+<tr><td>8 Threads</td><td> 9954.29</td></tr>
+<tr><td>16 Threads</td><td> 10294</td></tr>
+<tr><td>32 Threads</td><td> 29188.3</td></tr>
+<tr><td>64 Threads</td><td> 46422</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 4</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 0</td></tr>
+<tr><td>Futures</td><td> 10043.9</td></tr>
+<tr><td>2 Threads</td><td> 5798.02</td></tr>
+<tr><td>4 Threads</td><td> 4420.46</td></tr>
+<tr><td>8 Threads</td><td> 5274.35</td></tr>
+<tr><td>16 Threads</td><td> 6022.11</td></tr>
+<tr><td>32 Threads</td><td> 15193.3</td></tr>
+<tr><td>64 Threads</td><td> 22616.5</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 8</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 3.53906</td></tr>
+<tr><td>Futures</td><td> 4757.78</td></tr>
+<tr><td>2 Threads</td><td> 2151.26</td></tr>
+<tr><td>4 Threads</td><td> 2124.13</td></tr>
+<tr><td>8 Threads</td><td> 2411.91</td></tr>
+<tr><td>16 Threads</td><td> 2358.84</td></tr>
+<tr><td>32 Threads</td><td> 6400.71</td></tr>
+<tr><td>64 Threads</td><td> 11522.9</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 16</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 4.71615</td></tr>
+<tr><td>Futures</td><td> 2218.49</td></tr>
+<tr><td>2 Threads</td><td> 1060.3</td></tr>
+<tr><td>4 Threads</td><td> 1391.72</td></tr>
+<tr><td>8 Threads</td><td> 1295</td></tr>
+<tr><td>16 Threads</td><td> 1388.18</td></tr>
+<tr><td>32 Threads</td><td> 3235.14</td></tr>
+<tr><td>64 Threads</td><td> 5842.84</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 32</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.17969</td></tr>
+<tr><td>Futures</td><td> 1056.76</td></tr>
+<tr><td>2 Threads</td><td> 512.752</td></tr>
+<tr><td>4 Threads</td><td> 555.21</td></tr>
+<tr><td>8 Threads</td><td> 584.993</td></tr>
+<tr><td>16 Threads</td><td> 729.765</td></tr>
+<tr><td>32 Threads</td><td> 1627.6</td></tr>
+<tr><td>64 Threads</td><td> 2227.92</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 64</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 0.884766</td></tr>
+<tr><td>Futures</td><td> 765.591</td></tr>
+<tr><td>2 Threads</td><td> 267.728</td></tr>
+<tr><td>4 Threads</td><td> 266.696</td></tr>
+<tr><td>8 Threads</td><td> 403.657</td></tr>
+<tr><td>16 Threads</td><td> 307.534</td></tr>
+<tr><td>32 Threads</td><td> 905.057</td></tr>
+<tr><td>64 Threads</td><td> 1288.07</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 128</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.54769</td></tr>
+<tr><td>Futures</td><td> 417.514</td></tr>
+<tr><td>2 Threads</td><td> 169.542</td></tr>
+<tr><td>4 Threads</td><td> 195.194</td></tr>
+<tr><td>8 Threads</td><td> 149.123</td></tr>
+<tr><td>16 Threads</td><td> 153.914</td></tr>
+<tr><td>32 Threads</td><td> 440.956</td></tr>
+<tr><td>64 Threads</td><td> 711.189</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 256</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.40063</td></tr>
+<tr><td>Futures</td><td> 188.781</td></tr>
+<tr><td>2 Threads</td><td> 64.9784</td></tr>
+<tr><td>4 Threads</td><td> 85.6554</td></tr>
+<tr><td>8 Threads</td><td> 77.1782</td></tr>
+<tr><td>16 Threads</td><td> 83.5545</td></tr>
+<tr><td>32 Threads</td><td> 171.2</td></tr>
+<tr><td>64 Threads</td><td> 427.171</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 512</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.40055</td></tr>
+<tr><td>Futures</td><td> 66.3608</td></tr>
+<tr><td>2 Threads</td><td> 35.2536</td></tr>
+<tr><td>4 Threads</td><td> 37.5387</td></tr>
+<tr><td>8 Threads</td><td> 39.4553</td></tr>
+<tr><td>16 Threads</td><td> 52.6316</td></tr>
+<tr><td>32 Threads</td><td> 169.412</td></tr>
+<tr><td>64 Threads</td><td> 165.248</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 1024</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.35445</td></tr>
+<tr><td>Futures</td><td> 34.111</td></tr>
+<tr><td>2 Threads</td><td> 17.8019</td></tr>
+<tr><td>4 Threads</td><td> 19.1471</td></tr>
+<tr><td>8 Threads</td><td> 21.4599</td></tr>
+<tr><td>16 Threads</td><td> 27.4399</td></tr>
+<tr><td>32 Threads</td><td> 55.958</td></tr>
+<tr><td>64 Threads</td><td> 80.9745</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 2048</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.33608</td></tr>
+<tr><td>Futures</td><td> 21.0038</td></tr>
+<tr><td>2 Threads</td><td> 8.93777</td></tr>
+<tr><td>4 Threads</td><td> 10.4305</td></tr>
+<tr><td>8 Threads</td><td> 10.4766</td></tr>
+<tr><td>16 Threads</td><td> 13.4988</td></tr>
+<tr><td>32 Threads</td><td> 37.6907</td></tr>
+<tr><td>64 Threads</td><td> 52.7652</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 4096</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.32686</td></tr>
+<tr><td>Futures</td><td> 11.7228</td></tr>
+<tr><td>2 Threads</td><td> 4.71768</td></tr>
+<tr><td>4 Threads</td><td> 5.09547</td></tr>
+<tr><td>8 Threads</td><td> 5.1899</td></tr>
+<tr><td>16 Threads</td><td> 8.42874</td></tr>
+<tr><td>32 Threads</td><td> 15.6411</td></tr>
+<tr><td>64 Threads</td><td> 21.0844</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 8192</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.33146</td></tr>
+<tr><td>Futures</td><td> 7.53377</td></tr>
+<tr><td>2 Threads</td><td> 2.73778</td></tr>
+<tr><td>4 Threads</td><td> 4.50574</td></tr>
+<tr><td>8 Threads</td><td> 4.78909</td></tr>
+<tr><td>16 Threads</td><td> 5.00447</td></tr>
+<tr><td>32 Threads</td><td> 5.49282</td></tr>
+<tr><td>64 Threads</td><td> 12.2952</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 16384</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.33145</td></tr>
+<tr><td>Futures</td><td> 3.50946</td></tr>
+<tr><td>2 Threads</td><td> 1.6839</td></tr>
+<tr><td>4 Threads</td><td> 2.3502</td></tr>
+<tr><td>8 Threads</td><td> 3.23131</td></tr>
+<tr><td>16 Threads</td><td> 3.0977</td></tr>
+<tr><td>32 Threads</td><td> 3.71909</td></tr>
+<tr><td>64 Threads</td><td> 4.85186</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 32768</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.33116</td></tr>
+<tr><td>Futures</td><td> 1.74321</td></tr>
+<tr><td>2 Threads</td><td> 1.30151</td></tr>
+<tr><td>4 Threads</td><td> 1.97443</td></tr>
+<tr><td>8 Threads</td><td> 1.41035</td></tr>
+<tr><td>16 Threads</td><td> 1.99344</td></tr>
+<tr><td>32 Threads</td><td> 2.3096</td></tr>
+<tr><td>64 Threads</td><td> 3.16595</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 65536</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.32973</td></tr>
+<tr><td>Futures</td><td> 1.3159</td></tr>
+<tr><td>2 Threads</td><td> 0.99571</td></tr>
+<tr><td>4 Threads</td><td> 1.17985</td></tr>
+<tr><td>8 Threads</td><td> 1.52538</td></tr>
+<tr><td>16 Threads</td><td> 1.30064</td></tr>
+<tr><td>32 Threads</td><td> 1.57534</td></tr>
+<tr><td>64 Threads</td><td> 1.49256</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 131072</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.32973</td></tr>
+<tr><td>Futures</td><td> 1.12867</td></tr>
+<tr><td>2 Threads</td><td> 0.847419</td></tr>
+<tr><td>4 Threads</td><td> 0.848931</td></tr>
+<tr><td>8 Threads</td><td> 1.07583</td></tr>
+<tr><td>16 Threads</td><td> 1.00593</td></tr>
+<tr><td>32 Threads</td><td> 0.896011</td></tr>
+<tr><td>64 Threads</td><td> 1.09556</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 262144</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.34049</td></tr>
+<tr><td>Futures</td><td> 0.765643</td></tr>
+<tr><td>2 Threads</td><td> 0.775649</td></tr>
+<tr><td>4 Threads</td><td> 0.696717</td></tr>
+<tr><td>8 Threads</td><td> 0.835542</td></tr>
+<tr><td>16 Threads</td><td> 0.6153</td></tr>
+<tr><td>32 Threads</td><td> 0.544682</td></tr>
+<tr><td>64 Threads</td><td> 0.564514</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 524288</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.34612</td></tr>
+<tr><td>Futures</td><td> 0.873694</td></tr>
+<tr><td>2 Threads</td><td> 0.854276</td></tr>
+<tr><td>4 Threads</td><td> 0.568168</td></tr>
+<tr><td>8 Threads</td><td> 0.744587</td></tr>
+<tr><td>16 Threads</td><td> 0.495318</td></tr>
+<tr><td>32 Threads</td><td> 0.389498</td></tr>
+<tr><td>64 Threads</td><td> 0.405641</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 1048576</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.39405</td></tr>
+<tr><td>Futures</td><td> 0.708441</td></tr>
+<tr><td>2 Threads</td><td> 0.848031</td></tr>
+<tr><td>4 Threads</td><td> 0.541866</td></tr>
+<tr><td>8 Threads</td><td> 0.665817</td></tr>
+<tr><td>16 Threads</td><td> 0.559349</td></tr>
+<tr><td>32 Threads</td><td> 0.402447</td></tr>
+<tr><td>64 Threads</td><td> 0.38203</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 2097152</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.50827</td></tr>
+<tr><td>Futures</td><td> 0.696204</td></tr>
+<tr><td>2 Threads</td><td> 0.876835</td></tr>
+<tr><td>4 Threads</td><td> 0.691754</td></tr>
+<tr><td>8 Threads</td><td> 0.517332</td></tr>
+<tr><td>16 Threads</td><td> 0.553986</td></tr>
+<tr><td>32 Threads</td><td> 0.507929</td></tr>
+<tr><td>64 Threads</td><td> 0.497716</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 4194304</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.50741</td></tr>
+<tr><td>Futures</td><td> 0.695255</td></tr>
+<tr><td>2 Threads</td><td> 0.869135</td></tr>
+<tr><td>4 Threads</td><td> 0.633232</td></tr>
+<tr><td>8 Threads</td><td> 0.642808</td></tr>
+<tr><td>16 Threads</td><td> 0.581872</td></tr>
+<tr><td>32 Threads</td><td> 0.527993</td></tr>
+<tr><td>64 Threads</td><td> 0.516599</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 8388608</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.50802</td></tr>
+<tr><td>Futures</td><td> 0.584787</td></tr>
+<tr><td>2 Threads</td><td> 0.844277</td></tr>
+<tr><td>4 Threads</td><td> 0.61446</td></tr>
+<tr><td>8 Threads</td><td> 0.578087</td></tr>
+<tr><td>16 Threads</td><td> 0.574507</td></tr>
+<tr><td>32 Threads</td><td> 0.504685</td></tr>
+<tr><td>64 Threads</td><td> 0.491939</td></tr>
+</table>
+</section>
+
+<section>
+<h2>N = 16777216</h2>
+<table>
+<tr><th>Test</th><th>ns/N</th></tr>
+<tr><td>Serial</td><td> 1.50572</td></tr>
+<tr><td>Futures</td><td> 0.559983</td></tr>
+<tr><td>2 Threads</td><td> 0.831631</td></tr>
+<tr><td>4 Threads</td><td> 0.600156</td></tr>
+<tr><td>8 Threads</td><td> 0.556533</td></tr>
+<tr><td>16 Threads</td><td> 0.557101</td></tr>
+<tr><td>32 Threads</td><td> 0.479595</td></tr>
+<tr><td>64 Threads</td><td> 0.479999</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Parallel STL</h2>
+<pre><code>
+// We need to limit the global over-subscription to linear size.
+// Please note that *5 is just an arbitrary choice that fits in
+// a reasonable range. As long as total number don't go exponential
+// a little bit more linear over-subscription won't hurt.
+size_t _Max_global_chore_num = get_hardware_concurrency() * 5;
+atomic&lt;size_t&gt; _Global_chore_num;
+</code></pre>
+</section>
+				
+				
+				<section style="text-align: left;">
+					<h1>THE END</h1>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
