@@ -199,6 +199,8 @@ namespace cs477
 		{
 		}
 
+		future(future<future<T>> f);
+
 		future(future &&f)
 			: state(f.state)
 		{
@@ -246,7 +248,6 @@ namespace cs477
 
 	public:
 		std::shared_ptr<details::shared_state<T>> state;
-
 	};
 
 
@@ -273,6 +274,8 @@ namespace cs477
 		{
 			f.state = nullptr;
 		}
+
+		future(future<future<void>> f);
 
 		future &operator =(future &&f)
 		{
@@ -340,8 +343,6 @@ namespace cs477
 		details::queue_work(task);
 		return f;
 	}
-
-
 
 
 

@@ -138,4 +138,68 @@ namespace cs477
 
 	}
 
+
+
+	template <typename T> 
+	future<T>::future(future<future<T>> fft)
+	{
+		promise<T> p;
+		*this = p.get_future();
+
+		fft.then([p = std::move(p)](future<future<T>> fft) mutable
+		{
+			try
+			{
+				future<T> ft = fft.get();
+				ft.then([p = std::move(p)](future<T> ft) mutable
+				{
+					try
+					{
+						auto t = ft.get();
+						p.set(t);
+					}
+					catch (...)
+					{
+						p.set_exception(std::current_exception());
+					}
+				});
+			}
+			catch (...)
+			{
+				p.set_exception(std::current_exception());
+			}
+		});
+	}
+
+	future<void>::future(future<future<void>> ffv)
+	{
+		promise<void> p;
+		*this = p.get_future();
+
+		ffv.then([p = std::move(p)](future<future<void>> ffv) mutable
+		{
+			try
+			{
+				future<void> fv = ffv.get();
+				fv.then([p = std::move(p)](future<void> fv) mutable
+				{
+					try
+					{
+						fv.get();
+						p.set();
+					}
+					catch (...)
+					{
+						p.set_exception(std::current_exception());
+					}
+				});
+			}
+			catch (...)
+			{
+				p.set_exception(std::current_exception());
+			}
+		});
+	}
+
+
 }
