@@ -143,6 +143,36 @@ namespace cs477
 	}
 
 
+	future<double> parallel_sum(const double *first, const double *last, size_t threshold)
+	{
+		size_t len = static_cast<size_t>(last - first);
+		if (len <= threshold)
+		{
+			return make_ready_future<double>(cs477::sum(first, last));
+		}
+		else
+		{
+			auto mid = first + len / 2;
+			future<double> futures[2] =
+			{
+				cs477::queue_work([first, mid, threshold] { return parallel_sum2(first, mid, threshold); }),
+				cs477::queue_work([last, mid, threshold] { return parallel_sum2(mid, last, threshold); })
+			};
+
+			return when_all(futures, futures + 2).then([](future<std::vector<future<double>>> fvfd)
+			{
+				auto vfd = fvfd.get();
+				double s = 0.0;
+				for (auto &&fd : vfd)
+				{
+					s += fd.get();
+				}
+				return s;
+			});
+		}
+	}
+
+
 	template<class Executor, class InputIt>
 	auto parallel_sum(const Executor &ex, InputIt first, InputIt last)
 	{
@@ -190,6 +220,8 @@ namespace cs477
 
 		return s;
 	}
+
+
 
 
 }
