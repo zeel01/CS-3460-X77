@@ -237,7 +237,130 @@ namespace cs477
 		semaphore _full;
 		semaphore _lock;
 
-
 	};
+
+
+
+
+
+
+
+
+
+
+	class shm_pool
+	{
+	public:
+		struct pointer
+		{
+			uint32_t index;
+			uint32_t count;
+		};
+
+	public:
+		shm_pool()
+		{
+			_pos = nullptr;
+		}
+
+		~shm_pool()
+		{
+			if (_pos)
+			{
+				shm_free(_pos);
+			}
+		}
+
+		void create(const std::string name, uint32_t block_size, uint32_t num_blocks)
+		{
+			_block_size = block_size;
+			_count = num_blocks;
+	
+			// header is 1 byte per block + 4 bytes for pos.
+			uint32_t header_size = num_blocks + sizeof(uint32_t);
+			auto header_blocks = get_block_count(header_size);
+
+			_pos = (uint32_t *)shm_alloc(name, (header_blocks + num_blocks) * block_size);
+			_header = (char *)(_pos + 1);
+			_first_block = (char *)_pos + (header_blocks * block_size);
+		}
+
+		pointer allocate(uint32_t len)
+		{
+			auto blocks = get_block_count(len);
+
+			// Find the first free block
+			auto init = _header + *_pos;
+			auto begin = init;
+			auto end = _header + _count;
+
+			// Search from init to end for blocks # of 0's
+			auto pos = std::search_n(begin, end, static_cast<ptrdiff_t>(blocks), 0);
+			if (pos == end)
+			{
+				// Now search from the front of the header to init
+				begin = _header;
+				end = init;
+				pos = std::search_n(begin, init, static_cast<ptrdiff_t>(blocks), 0);
+				if (pos == init)
+				{
+					throw std::bad_alloc();
+				}
+			}
+
+			// Mark the blocks as used.
+			mark(pos, blocks, 1);
+
+			// Move the pointer to the end of the blocks
+			*_pos = static_cast<uint32_t>((pos + blocks) - _header);
+
+			// Return the pointer
+			pointer p;
+			p.index = static_cast<uint32_t>(pos - _header);
+			p.count = blocks;
+			return p;
+		}
+
+		void deallocate(const pointer &ptr)
+		{
+			auto pos = _header + ptr.index;
+			mark(pos, ptr.count, 0);
+		}
+
+		void *operator()(const pointer &ptr)
+		{
+			return _first_block + (ptr.index * _block_size);
+		}
+
+	private:
+		uint32_t get_block_count(uint32_t bytes)
+		{
+			auto blocks = (bytes / _block_size) + 1;
+			if (bytes % _block_size == 0)
+			{
+				blocks--;
+			}
+			return blocks;
+		}
+
+		void mark(char *pos, uint32_t count, char value)
+		{
+			auto end = pos + count;
+			while (pos < end)
+			{
+				*pos++ = value;
+			}
+		}
+
+	private:
+		uint32_t _block_size;
+		uint32_t _count;
+		
+		uint32_t *_pos;			// pointer to shared first_free page.
+		char *_header;			// byte[] of usage indicators for pages.
+		char *_first_block;		// pointer to first block of shared memory
+	};
+
+
 
 }
