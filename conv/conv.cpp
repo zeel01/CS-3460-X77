@@ -40,10 +40,10 @@ void conv(matrix &x, const matrix &k)
 		{
 			int t = 0;
 
-			auto yrow = row + k.rows / 2 + 1;
+			auto yrow = row;
 			for (int krow = k.rows - 1; krow >= 0; krow--, yrow++)
 			{
-				auto ycol = col + k.cols / 2 + 1;
+				auto ycol = col;
 				for (int kcol = k.cols - 1; kcol >= 0; kcol--, ycol++)
 				{
 					t += y(yrow, ycol) * k(krow, kcol);
@@ -107,7 +107,7 @@ int main()
 	auto bmp = load_image("C:\\Dev\\2015\\90.jpg");
 	auto orig = bmp;
 
-	matrix kernel = binomial(9);
+	matrix kernel = binomial(1);
 
 	auto start = now();
 	conv(bmp, kernel);
