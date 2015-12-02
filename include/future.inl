@@ -171,7 +171,7 @@ namespace cs477
 		});
 	}
 
-	future<void>::future(future<future<void>> ffv)
+	inline future<void>::future(future<future<void>> ffv)
 	{
 		promise<void> p;
 		*this = p.get_future();

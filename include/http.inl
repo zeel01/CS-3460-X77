@@ -80,6 +80,34 @@ namespace cs477
 			return 0;
 		}
 
+		inline http_request read_http_request(const char *str, uint32_t len)
+		{
+			http_request_parse_state state;
+
+			state.on_message_begin = on_request_begin_message;
+			state.on_url = on_request_url;
+			state.on_header_field = on_request_header_field;
+			state.on_header_value = on_request_header_value;
+			state.on_headers_complete = on_request_headers_complete;
+			state.on_body = on_request_body;
+			state.on_message_complete = on_request_message_complete;
+
+			http_parser_init(&state, HTTP_REQUEST);
+			state.data = &state;
+
+			auto parsed = http_parser_execute(&state, &state, str, len);
+			if (state.http_errno)
+			{
+				throw std::system_error(state.http_errno, http_category());
+			}
+			else if (state.state != http_request_parse_state::done)
+			{
+				throw std::exception("Invalid state");
+			}
+
+			return std::move(state.rq);
+		}
+
 		inline http_request read_http_request(socket &sock)
 		{
 			http_request_parse_state state;
@@ -151,8 +179,7 @@ namespace cs477
 
 		}
 
-
-		inline void write_http_response(socket &sock, const http_response &rsp)
+		inline std::string write_http_response(const http_response &rsp)
 		{
 			char line[128];
 
@@ -163,7 +190,7 @@ namespace cs477
 
 			if (rsp.body.length())
 			{
-				sprintf_s(line, "Content-Length : %d\r\n", rsp.body.length());
+				sprintf_s(line, "Content-Length : %d\r\n", static_cast<uint32_t>(rsp.body.length()));
 				text.append(line);
 			}
 
@@ -176,36 +203,19 @@ namespace cs477
 			text.append("\r\n");
 
 			text.append(rsp.body);
+			return text;
+		}
 
-			sock.send(text.c_str(), text.length());
+		inline void write_http_response(socket &sock, const http_response &rsp)
+		{
+			auto text = write_http_response(rsp);
+			sock.send(text.c_str(), static_cast<uint32_t>(text.length()));
 		}
 
 		inline future<void> write_http_response_async(socket sock, const http_response &rsp)
 		{
-			char line[128];
-
-			std::string text;
-
-			sprintf_s(line, "HTTP/1.1 %d %s\r\n", rsp.status, rsp.message.c_str());
-			text.append(line);
-
-			if (rsp.body.length())
-			{
-				sprintf_s(line, "Content-Length : %d\r\n", rsp.body.length());
-				text.append(line);
-			}
-
-			for (auto &hdr : rsp.headers)
-			{
-				sprintf_s(line, "%s : %s\r\n", hdr.first.c_str(), hdr.second.c_str());
-				text.append(line);
-			}
-
-			text.append("\r\n");
-
-			text.append(rsp.body);
-
-			return sock.send_async(text.c_str(), text.length());
+			auto text = write_http_response(rsp);
+			return sock.send_async(text.c_str(), static_cast<uint32_t>(text.length()));
 		}
 
 

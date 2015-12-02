@@ -123,21 +123,28 @@ namespace cs477
 	class bounded_buffer
 	{
 	public:
-		bounded_buffer(const std::string name)
+		bounded_buffer()
 		{
-
-			_buf = static_cast<char *>(shm_alloc(name, N * sizeof(T) + sizeof(uint32_t)));
-			_count = reinterpret_cast<uint32_t *>(_buf);
-			_vector = reinterpret_cast<T *>(_count + 1);
-	
-			_lock.init(name + "-lock", 1, 1);
-			_empty.init(name + "-empty", N, N);
-			_full.init(name + "-full", 0, N);
+			_buf = nullptr;
+			_count = nullptr;
+			_vector = nullptr;
 		}
 
 		~bounded_buffer()
 		{
 			shm_free(_buf);
+		}
+
+		void create(const std::string name)
+		{
+
+			_buf = static_cast<char *>(shm_alloc(name, N * sizeof(T) + sizeof(uint32_t)));
+			_count = reinterpret_cast<uint32_t *>(_buf);
+			_vector = reinterpret_cast<T *>(_count + 1);
+
+			_lock.init(name + "-lock", 1, 1);
+			_empty.init(name + "-empty", N, N);
+			_full.init(name + "-full", 0, N);
 		}
 
 		void write(const T &value)
@@ -181,9 +188,28 @@ namespace cs477
 	class bounded_queue
 	{
 	public:
-		bounded_queue(const std::string name)
+		bounded_queue()
 		{
+			_buf = nullptr;
+			_write = nullptr;
+			_read = nullptr;
+			_vector = nullptr;
+		}
 
+		~bounded_queue()
+		{
+			shm_free(_buf);
+		}
+
+	public:
+		const std::string &name() const
+		{
+			return _name;
+		}
+
+		void create(const std::string name)
+		{
+			_name = name;
 			_buf = static_cast<char *>(shm_alloc(name, N * sizeof(T) + 2 * sizeof(uint32_t)));
 			_write = reinterpret_cast<uint32_t *>(_buf);
 			_read = _write + 1;
@@ -192,11 +218,6 @@ namespace cs477
 			_lock.init(name + "-lock", 1, 1);
 			_empty.init(name + "-empty", N, N);
 			_full.init(name + "-full", 0, N);
-		}
-
-		~bounded_queue()
-		{
-			shm_free(_buf);
 		}
 
 		void write(const T &value)
@@ -228,6 +249,8 @@ namespace cs477
 		}
 
 	private:
+		std::string _name;
+
 		char *_buf;
 		uint32_t *_read;
 		uint32_t *_write;
@@ -253,6 +276,22 @@ namespace cs477
 	public:
 		struct pointer
 		{
+			pointer()
+			{
+				index = 0;
+				count = 0;
+			}
+
+			bool operator ==(nullptr_t) const
+			{
+				return count == 0;
+			}
+
+			bool operator !=(nullptr_t) const
+			{
+				return count != 0;
+			}
+
 			uint32_t index;
 			uint32_t count;
 		};
@@ -271,8 +310,17 @@ namespace cs477
 			}
 		}
 
+	public:
+
+		const std::string &name() const
+		{
+			return _name;
+		}
+
 		void create(const std::string name, uint32_t block_size, uint32_t num_blocks)
 		{
+			_name = name;
+
 			_block_size = block_size;
 			_count = num_blocks;
 	
@@ -327,7 +375,7 @@ namespace cs477
 			mark(pos, ptr.count, 0);
 		}
 
-		void *operator()(const pointer &ptr)
+		char *operator()(const pointer &ptr)
 		{
 			return _first_block + (ptr.index * _block_size);
 		}
@@ -353,6 +401,8 @@ namespace cs477
 		}
 
 	private:
+		std::string _name;
+
 		uint32_t _block_size;
 		uint32_t _count;
 		

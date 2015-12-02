@@ -22,7 +22,7 @@ void concurrent_vector();
 void concurrent_queue();
 
 
-#include "include/algorithm.h"
+#include "algorithm.h"
 
 int main()
 {

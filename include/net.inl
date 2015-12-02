@@ -116,7 +116,7 @@ namespace cs477
 			}
 		}
 
-		inline void socket::send(const char *buf, size_t len)
+		inline void socket::send(const char *buf, uint32_t len)
 		{
 			if (!sock) 
 			{
@@ -138,7 +138,7 @@ namespace cs477
 			}
 		}
 
-		inline size_t socket::recv(char *buf, size_t len)
+		inline uint32_t socket::recv(char *buf, uint32_t len)
 		{
 			if (!sock)
 			{
@@ -151,10 +151,10 @@ namespace cs477
 				throw std::system_error(GetLastError(), std::system_category());
 			}
 
-			return static_cast<size_t>(recvd);
+			return static_cast<uint32_t>(recvd);
 		}
 
-		inline future<void> socket::send_async(const char *buf, size_t len)
+		inline future<void> socket::send_async(const char *buf, uint32_t len)
 		{
 			if (!sock)
 			{

@@ -63,7 +63,7 @@ namespace cs477
 		class async_recv 
 		{
 		public:
-			async_recv(size_t count)
+			async_recv(uint32_t count)
 			{
 				memset(&ol.ol, 0, sizeof(OVERLAPPED));
 				ol.type = overlapped::recv;
@@ -161,7 +161,7 @@ namespace cs477
 			}
 
 		public:
-			future<void> send(const char *buf, size_t len)
+			future<void> send(const char *buf, uint32_t len)
 			{
 				auto op = new async_send();
 				op->buf = { buf, len };
@@ -189,7 +189,7 @@ namespace cs477
 				return f;
 			}
 
-			future<std::string> recv(size_t len)
+			future<std::string> recv(uint32_t len)
 			{
 				auto op = new async_recv(len);
 
@@ -318,11 +318,11 @@ namespace cs477
 		public:
 			void connect(const sockaddr_in &addr);
 
-			void send(const char *buf, size_t len);
-			size_t recv(char *buf, size_t len);
+			void send(const char *buf, uint32_t len);
+			uint32_t recv(char *buf, uint32_t len);
 
 		public:
-			future<void> send_async(const char *buf, size_t len);
+			future<void> send_async(const char *buf, uint32_t len);
 			future<std::string> recv_async();
 
 		private:

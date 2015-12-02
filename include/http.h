@@ -19,6 +19,7 @@ namespace cs477
 			std::string body;
 		};
 
+		http_request read_http_request(const char *buf, uint32_t len);
 		http_request read_http_request(socket &sock);
 		future<http_request> read_http_request_async(socket sock);
 
@@ -31,6 +32,7 @@ namespace cs477
 			std::string body;
 		};
 
+		std::string write_http_response(const http_response &rsp);
 		void write_http_response(socket &sock, const http_response &rsp);
 		future<void> write_http_response_async(socket sock, const http_response &rsp);
 

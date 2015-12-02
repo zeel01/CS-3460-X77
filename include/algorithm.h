@@ -143,7 +143,7 @@ namespace cs477
 	}
 
 
-	future<double> parallel_sum(const double *first, const double *last, size_t threshold)
+	inline future<double> parallel_sum_d(const double *first, const double *last, size_t threshold)
 	{
 		size_t len = static_cast<size_t>(last - first);
 		if (len <= threshold)
@@ -155,8 +155,8 @@ namespace cs477
 			auto mid = first + len / 2;
 			future<double> futures[2] =
 			{
-				cs477::queue_work([first, mid, threshold] { return parallel_sum(first, mid, threshold); }),
-				cs477::queue_work([last, mid, threshold] { return parallel_sum(mid, last, threshold); })
+				cs477::queue_work([first, mid, threshold] { return parallel_sum_d(first, mid, threshold); }),
+				cs477::queue_work([last, mid, threshold] { return parallel_sum_d(mid, last, threshold); })
 			};
 
 			return when_all(futures, futures + 2).then([](future<std::vector<future<double>>> fvfd)
