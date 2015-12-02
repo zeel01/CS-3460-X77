@@ -5,7 +5,7 @@
 namespace cs477
 {
 
-	struct process_handle
+	struct process_handle : public std::enable_shared_from_this<process_handle>
 	{
 	public:
 		~process_handle()
@@ -16,6 +16,30 @@ namespace cs477
 
 		HANDLE ph;
 		HANDLE th;
+
+		auto wait()
+		{
+			struct param
+			{
+				std::shared_ptr<process_handle> proc;
+				promise<int> prom;
+			} *p = new param;
+			p->proc = shared_from_this();
+
+			auto w = CreateThreadpoolWait([](PTP_CALLBACK_INSTANCE, PVOID context, PTP_WAIT wait)
+			{
+				auto p = (param *)context;
+				DWORD code;
+				GetExitCodeProcess(p->proc->ph, &code);
+				p->prom.set((int)code);
+				delete p;
+				CloseThreadpoolWait(wait);
+			}, p, nullptr);
+
+			SetThreadpoolWait(w, ph, nullptr);
+
+			return p->prom.get_future();
+		}
 	};
 
 	using process = std::shared_ptr<process_handle>;

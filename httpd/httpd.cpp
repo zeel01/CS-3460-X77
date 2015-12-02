@@ -28,8 +28,8 @@ int main()
 	rq_queue = std::make_shared<cs477::bounded_queue<message, 1024>>();
 	rq_queue->create("httpd-rq-queue");
 
-	auto rp_queue = std::make_shared<cs477::bounded_queue<message, 1024>>();
-	rq_queue->create("httpd-rp-queue");
+	rp_queue = std::make_shared<cs477::bounded_queue<message, 1024>>();
+	rp_queue->create("httpd-rp-queue");
 
 
 	// Create the child processes
