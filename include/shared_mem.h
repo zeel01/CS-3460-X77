@@ -233,6 +233,30 @@ namespace cs477
 			_full.release();
 		}
 
+		future<void> write_async(T value)
+		{
+			future<void> f = _empty.wait_async();
+			f = f.then([this, value](auto f) mutable
+			{
+				f.get();
+				f = _lock.wait_async();
+				f = f.then([this, value](auto f)
+				{
+					f.get();
+
+					_vector[*_write] = value;
+					(*_write)++;
+					if (*_write == N) (*_write) = 0;
+
+					_lock.release();
+					_full.release();
+				});
+				return f;
+			});
+			
+			return f;
+		}
+
 		T read()
 		{
 			_full.wait();
@@ -246,6 +270,30 @@ namespace cs477
 			_empty.release();
 
 			return t;
+		}
+
+		future<T> read_async()
+		{
+			future<T> f = _full.wait_async().then([this](auto f) mutable
+			{
+				f.get();
+				f = _lock.wait_async();
+				return f.then([this](auto f)
+				{
+					f.get();
+
+					auto t = _vector[*_read];
+					(*_read)++;
+					if (*_read == N) (*_read) = 0;
+
+					_lock.release();
+					_empty.release();
+
+					return t;
+				});
+			});
+
+			return f;
 		}
 
 	private:

@@ -1,25 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="client.h" />
-    <ClInclude Include="shared.h" />
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="file.h" />
+    <ClInclude Include="targetver.h">
       <Filter>build</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
+    <ClInclude Include="stdafx.h">
       <Filter>build</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="httpd.cpp" />
-    <ClCompile Include="client.cpp" />
+    <ClCompile Include="fsp.cpp" />
+    <ClCompile Include="file.cpp" />
     <ClCompile Include="stdafx.cpp">
       <Filter>build</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="build">
-      <UniqueIdentifier>{c2070223-f8de-49c3-8cb2-77e6f97ba704}</UniqueIdentifier>
+      <UniqueIdentifier>{8ca69c16-d9be-4098-a820-c4d9b0cd16ed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

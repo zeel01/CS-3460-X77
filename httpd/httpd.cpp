@@ -14,11 +14,18 @@ std::shared_ptr<cs477::bounded_queue<message, 1024>> rq_queue;
 std::shared_ptr<cs477::bounded_queue<message, 1024>> rp_queue;
 
 
+void create_db_process();
+void create_fs_process();
+
+cs477::process fsp;
+cs477::process dbp;
+
 int main()
 {
 	using namespace cs477;
 
 	net::initialize();
+
 
 	// Create shared resources.
 
@@ -32,9 +39,9 @@ int main()
 	rp_queue->create("httpd-rp-queue");
 
 
-	// Create the child processes
-
-	auto echo = create_process("..\\Debug\\echop.exe", "");
+	//// Create the child processes:
+	//create_db_process();
+	//create_fs_process();
 
 	// Start the server
 
@@ -42,7 +49,7 @@ int main()
 	auto ep = net::resolve_address("localhost", 8080);
 	server.listen(ep);
 
-
+	
 	for (;;)
 	{
 		// Accept an incoming connection
@@ -68,5 +75,25 @@ int main()
 	net::finalize();
 
     return 0;
+}
+
+
+
+void create_db_process()
+{
+	dbp = cs477::create_process("..\\Debug\\dbp.exe", "");
+	dbp->wait().then([] (auto f)
+	{
+		create_db_process();
+	});
+}
+
+void create_fs_process()
+{
+	fsp = cs477::create_process("..\\Debug\\fsp.exe", "");
+	fsp->wait().then([](auto f)
+	{
+		create_fs_process();
+	});
 }
 

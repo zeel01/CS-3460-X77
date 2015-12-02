@@ -26,7 +26,7 @@ namespace cs477
 			} *p = new param;
 			p->proc = shared_from_this();
 
-			auto w = CreateThreadpoolWait([](PTP_CALLBACK_INSTANCE, PVOID context, PTP_WAIT wait)
+			auto w = CreateThreadpoolWait([](PTP_CALLBACK_INSTANCE, PVOID context, PTP_WAIT wait, TP_WAIT_RESULT result)
 			{
 				auto p = (param *)context;
 				DWORD code;

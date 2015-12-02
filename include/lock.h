@@ -103,7 +103,7 @@ namespace cs477
 
 
 
-
+	template <typename T> class future;
 
 
 	class semaphore
@@ -127,12 +127,17 @@ namespace cs477
 		void wait();
 		void release();
 
+		future<void> wait_async();
+
 	public:
 		void lock() { wait(); }
 		void unlock() { release(); }
 
 	private:
 		HANDLE sem;
+		std::atomic<int> async;
+
+		static void __stdcall wait_callback(PTP_CALLBACK_INSTANCE, PVOID context, PTP_WAIT wait, TP_WAIT_RESULT result);
 	};
 
 

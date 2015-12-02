@@ -165,7 +165,7 @@ namespace cs477
 
 
 	inline semaphore::semaphore()
-		: sem(nullptr)
+		: sem(nullptr), async(0)
 	{
 	}
 
@@ -173,6 +173,7 @@ namespace cs477
 	{
 		if (sem)
 		{
+			// Should cause all async waits to abort
 			CloseHandle(sem);
 		}
 	}
@@ -184,6 +185,7 @@ namespace cs477
 		{
 			std::system_error(GetLastError(), std::system_category());
 		}
+		
 	}
 
 	inline void semaphore::init(const std::string &name)
@@ -203,12 +205,39 @@ namespace cs477
 		}
 	}
 
+	inline future<void> semaphore::wait_async()
+	{
+		struct wait_param
+		{
+			promise<void> p;
+		} *param = new wait_param;
+		auto f = param->p.get_future();
+
+		auto wait = CreateThreadpoolWait([](PTP_CALLBACK_INSTANCE, PVOID context, PTP_WAIT wait, TP_WAIT_RESULT result)
+		{
+			auto param = (wait_param *)context;
+
+			if (result == WAIT_OBJECT_0)
+			{
+				param->p.set();
+			}
+			else
+			{
+				auto err = std::error_code{ (int)result, std::system_category() };
+				param->p.set_exception(std::make_exception_ptr(err));
+			}
+			
+		}, param, nullptr);
+
+		SetThreadpoolWait(wait, sem, nullptr);
+
+		return f;
+	}
+
 	inline void semaphore::release()
 	{
 		ReleaseSemaphore(sem, 1, nullptr);
 	}
-
-
 
 
 }
