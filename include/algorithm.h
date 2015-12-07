@@ -10,17 +10,59 @@
 namespace cs477
 {
 
-	struct parallel_threshold
+
+	template <typename Iter, typename Fn>
+	void parallel_for(Iter first, Iter last, Fn fn)
 	{
-		static const size_t count = 1;
-		static const size_t sum = 1;
-	};
+		// Parition the work into n chunks.  
+		// Each thread will work only on one chunk.
+		auto threads = std::thread::hardware_concurrency() * 4;
+		auto count = last - first;
+		auto count_per_thread = count / threads;
+		if (count_per_thread == 0)
+		{
+			count_per_thread = 1;
+		}
+
+		// Have to make future return something because
+		// when_all doesn't work with future<void>.
+		std::vector<future<int>> futures;
+
+		auto chunk_first = first;
+		for (unsigned i = 0; i < threads && chunk_first < last; i++)
+		{
+			Iter chunk_last = chunk_first + count_per_thread;
+			if (chunk_last >= last)
+			{
+				chunk_last = last;
+			}
+
+			futures.push_back(queue_work([chunk_first, chunk_last, fn]
+			{
+				// Compute the count of this chunk.
+				for (auto i = chunk_first; i != chunk_last; ++i)
+				{
+					fn(i);
+				}
+
+				return 0;
+			}));
+
+			// Don't forget to move to the next chunk
+			chunk_first = chunk_last;
+		}
+
+		// Wait for all the futures to finish.
+		when_all(futures.begin(), futures.end()).get();
+	}
+
+
 
 	template<class InputIt, class T>
 	size_t parallel_count(InputIt first, InputIt last, const T& value)
 	{
-
-		if (last - first < parallel_threshold::count)
+		// TODO: Find a better bound
+		if (last - first < 1000)
 		{
 			// Let the STL handle the small cases
 			return std::count(first, last, value);
@@ -96,13 +138,13 @@ namespace cs477
 	}
 
 	template<class InputIt>
-	auto parallel_sum(InputIt first, InputIt last, ptrdiff_t threshold = parallel_threshold::sum)
+	auto parallel_sum(InputIt first, InputIt last)
 	{
-		//if (std::distance(first, last) < threshold)
-		//{
-		//	// Let the STL handle the small cases
-		//	return sum(first, last);
-		//}
+		if (std::distance(first, last) < 10000)
+		{
+			// Let the STL handle the small cases
+			return sum(first, last);
+		}
 
 		using T = std::decay<decltype(*first)>::type;
 
