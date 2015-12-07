@@ -30,9 +30,9 @@ Homework Assignments
 
 3.	Web server
 	Write a web server to server static files.  The networking and file I/O be entirely asynchronous.
-	a. Completeness: 5pt  
-	b. Performance: ?pts  
-	c. Style: ?pts  
+	a. Completeness: 5pts  
+	b. Performance: 2pts  
+	c. Style: 3pts  
 	
 4.  Distributed primes
 	Write a distributed version of the prime numbers problem.  The solution
