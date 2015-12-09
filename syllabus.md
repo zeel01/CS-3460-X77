@@ -40,10 +40,9 @@ Gove. Multicore Application Programming: for Windows, Linux, and Oracle Solaris 
 ##Grading
 
 ###Content
-* 20% Homework assignments
-* 50% Programming Projects
-* 15% Midterm exam
-* 15% Final exam
+* 160pts Programming Assignments
+* 30pts Midterm exam
+* 60pts Final exam
 
 ###Scale
 A: 90 – 100; B: 80 – 89; C: 70 – 79; F: Less than 70

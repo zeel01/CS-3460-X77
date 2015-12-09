@@ -6,35 +6,35 @@ Homework Assignments
 
 0.	Hello World
 	Set up a github account and write a C++ program that says "Hello, world."  
-	a. Completeness: 1pt  
+	a. Completeness: 10pts  
 	b. Performance: 0pts  
 	c. Style: 0pts  
 	
 1.	Prime Numbers
 	Parallelize primes.  
-	a. Completeness: 5pt  
-	b. Performance: 3pts  
-	c. Style: 2pts  
+	a. Completeness: 10pts  
+	b. Performance: 10pts  
+	c. Style: 10pts  
 
 2.	Convolution
 	Parallelize conv.  
-	a. Completeness: 2pt  
-	b. Performance: 5pts  
-	c. Style: 3pts  
+	a. Completeness: 10pts
+	b. Performance: 10pts  
+	c. Style: 10pts  
 
 3.	Parallel Sort
 	Implement a Parallel sort algorithm (quick or merge).  
-	a. Completeness: 5pt  
-	b. Performance: 5pts  
-	c. Style: 3pts  
+	a. Completeness: 10pts  
+	b. Performance: 10pts  
+	c. Style: 10pts  
 
-3.	Web server
+4.	Web server
 	Write a web server to server static files.  The networking and file I/O be entirely asynchronous.
-	a. Completeness: 5pts  
-	b. Performance: 2pts  
-	c. Style: 3pts  
+	a. Completeness: 10pts  
+	b. Performance: 10pts  
+	c. Style: 10pts  
 	
-4.  Distributed primes
+5.  Distributed primes
 	Write a distributed version of the prime numbers problem.  The solution
 	should consist of two programs: a driver and a processor.  
 	
@@ -45,7 +45,12 @@ Homework Assignments
 	
 	You will need two shared_queue's and a shared memory pool to accomplish this.
 	
-	a. Completeness: ?pt  
-	b. Performance: ?pts  
-	c. Style: ?pts  
+	a. Completeness: 10pts
+	b. Performance: 10pts 
+	c. Style: 10pts
+
 	
+MidTerm: 30pts
+Final 60pts
+
+Total: 	250pts
