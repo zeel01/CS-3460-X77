@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "http_parser", "http_parser\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqlite", "sqlite\sqlite.vcxproj", "{5AB03A33-BAF4-4564-92A9-9EFC6934792C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World", "Hello World\Hello World.vcxproj", "{801359D9-3BC1-41C6-A934-7AB0E53C7BB9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -85,6 +87,14 @@ Global
 		{5AB03A33-BAF4-4564-92A9-9EFC6934792C}.Release|x64.Build.0 = Release|x64
 		{5AB03A33-BAF4-4564-92A9-9EFC6934792C}.Release|x86.ActiveCfg = Release|Win32
 		{5AB03A33-BAF4-4564-92A9-9EFC6934792C}.Release|x86.Build.0 = Release|Win32
+		{801359D9-3BC1-41C6-A934-7AB0E53C7BB9}.Debug|x64.ActiveCfg = Debug|x64
+		{801359D9-3BC1-41C6-A934-7AB0E53C7BB9}.Debug|x64.Build.0 = Debug|x64
+		{801359D9-3BC1-41C6-A934-7AB0E53C7BB9}.Debug|x86.ActiveCfg = Debug|Win32
+		{801359D9-3BC1-41C6-A934-7AB0E53C7BB9}.Debug|x86.Build.0 = Debug|Win32
+		{801359D9-3BC1-41C6-A934-7AB0E53C7BB9}.Release|x64.ActiveCfg = Release|x64
+		{801359D9-3BC1-41C6-A934-7AB0E53C7BB9}.Release|x64.Build.0 = Release|x64
+		{801359D9-3BC1-41C6-A934-7AB0E53C7BB9}.Release|x86.ActiveCfg = Release|Win32
+		{801359D9-3BC1-41C6-A934-7AB0E53C7BB9}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
